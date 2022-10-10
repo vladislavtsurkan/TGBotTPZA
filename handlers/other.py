@@ -4,7 +4,7 @@ from aiogram.utils.exceptions import BotBlocked
 
 async def error_bot_blocked(update: types.Update, exception: BotBlocked):
     """Error handling (BotBlocked)"""
-    print(f"Меня заблокировал пользователь!\nСообщение: {update}\nОшибка: {exception}")
+    print(f"Мене заблокував користувач!\nПовідомлення: {update}\nПомилка: {exception}")
     return True
 
 
