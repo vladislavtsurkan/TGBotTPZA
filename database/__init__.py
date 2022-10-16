@@ -1,1 +1,2 @@
-from database import mysql_database
+from database import base
+from database import models

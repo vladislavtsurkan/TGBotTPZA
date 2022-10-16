@@ -1,8 +1,9 @@
-import requests
+import asyncio
+import aiohttp
 
 from bs4 import BeautifulSoup
 from time import time
-from datatypes import LessonTuple
+from parser.datatypes import LessonTuple
 from pprint import pprint
 
 _unknown_field = "Немає інформації"
@@ -14,11 +15,13 @@ _headers = {
 }
 
 
-def parse_schedule_tables(url: str) -> list[LessonTuple]:
+async def parse_schedule_tables(url: str) -> list[LessonTuple]:
     """Use for parsing schedule in http://epi.kpi.ua"""
-    response = requests.get(url, headers=_headers)
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url, allow_redirects=True) as response:
+            data = await response.read()
 
-    soup = BeautifulSoup(response.text, "lxml")
+    soup = BeautifulSoup(data, "lxml")
 
     tables = soup.find_all("table")
 
@@ -132,25 +135,29 @@ def _slice_teachers_names(teachers: list[str]) -> list[str]:
     return sliced_names
 
 
-if __name__ == '__main__':
+async def main():
     time_start = time()
     # ЛА-п11
-    lap11 = parse_schedule_tables(
+    lap11 = await parse_schedule_tables(
         'http://epi.kpi.ua/Schedules/ViewSchedule.aspx?g=f761eeb5-f6a2-4019-9d18-6647bd6daa23'
     )
     pprint(lap11)
     print(f'Всього пар: {len(lap11)}')
     # ЛА-91
-    la91 = parse_schedule_tables(
+    la91 = await parse_schedule_tables(
         'http://epi.kpi.ua/Schedules/ViewSchedule.aspx?g=81b68054-0171-4aa6-847e-80a78584638d'
     )
     pprint(la91)
     print(f'Всього пар: {len(la91)}')
     # ЛА-п21
-    lap21 = parse_schedule_tables(
+    lap21 = await parse_schedule_tables(
         'http://epi.kpi.ua/Schedules/ViewSchedule.aspx?g=4439a805-5bb5-4e80-8755-fcde49fdf47b'
     )
     pprint(lap21)
     print(f'Всього пар: {len(lap21)}')
 
     print(f'Пройшло {time() - time_start} секунд')
+
+
+if __name__ == '__main__':
+    asyncio.run(main())
