@@ -1,5 +1,7 @@
+from typing import Any
 from aiogram import types, Dispatcher
 from sqlalchemy import select
+from sqlalchemy.sql.selectable import Select
 
 from database.models import User, Faculty, Department, Group, Discipline, Lesson, Teacher, Task
 
@@ -22,39 +24,70 @@ async def is_user_admin(msg: types.Message):
             return False
 
 
-def get_or_create(session, model, defaults=None, **kwargs):
-    instance = session.query(model).filter_by(**kwargs).first()
-    if instance:
+async def get_or_create(session, class_model: Any, sql: Select, **kwargs) -> (Any, bool):
+    result = await session.execute(sql)
+    instance = result.scalars().first()
+    if instance is not None:
         return instance, False
     else:
-        instance = model(**kwargs)
-        session.add(instance)
-        session.commit()
-        return instance
+        instance = class_model(**kwargs)
+        await session.merge(instance)
+        await session.commit()
+        result = await session.execute(sql)
+        instance = result.scalars().first()
+        return instance, True
 
 
-async def add_information_from_schedule_to_db(msg: types.Message, url_schedule: str, group_id: int) -> None:
+async def add_information_from_schedule_to_db(msg: types.Message, group_instance: Group) -> None:
     db_session = msg.bot.get('db')
-    schedule_lessons_tuple = await parse_schedule_tables(url_schedule)
+    schedule_lessons_tuple: list[LessonTuple] = await parse_schedule_tables(group_instance.schedule_url)
 
     async with db_session() as session:
         for lesson in schedule_lessons_tuple:
-            discipline_title, teachers, locations, week, day_number, lesson_number = (
-                lesson.discipline, lesson.teachers, lesson.locations, lesson.week,
+            discipline_title, teachers, location, week, day_number, lesson_number = (
+                lesson.discipline, lesson.teachers, lesson.location, lesson.week,
                 lesson.day_number, lesson.lesson_number
             )
+            sql_discipline = select(Discipline).where(Discipline.title == discipline_title)
+            discipline_instance, is_created = await get_or_create(session, Discipline, sql_discipline,
+                                                                  title=discipline_title)
 
-            teachers_created = []
-            for teacher in teachers:
-                teacher_created = Teacher(full_name=teacher)
-                teachers_created.append(teacher_created)
-                await session.merge(teacher_created)
+            sql_lesson = select(Lesson). \
+                where(Lesson.discipline_id == discipline_instance.id,
+                      Lesson.week == week,
+                      Lesson.day == day_number,
+                      Lesson.number_lesson == lesson_number)
+            lesson_instance, is_created = await get_or_create(session, Lesson, sql_lesson,
+                                                              discipline_id=discipline_instance.id,
+                                                              type_and_location=location,
+                                                              week=week, day=day_number, number_lesson=lesson_number)
 
-            await session.merge(Lesson())
+            for full_name in teachers:
+                sql_teacher = select(Teacher).where(Teacher.full_name == full_name)
+                teacher_instance, is_created = await get_or_create(session, Teacher, sql_teacher, full_name=full_name)
+
+                teachers = await session.run_sync(lambda session_sync: lesson_instance.teachers)
+                if teacher_instance not in teachers:
+                    await session.run_sync(lambda session_sync: lesson_instance.teachers.append(teacher_instance))
+
+            await session.run_sync(lambda session_sync: lesson_instance.groups.append(group_instance))
+            await session.commit()
+
+
+async def create_group(msg: types.Message, department_id: int, title: str, url_schedule: str):
+    db_session = msg.bot.get('db')
+
+    async with db_session() as session:
+        sql = select(Group).where(Group.department_id == department_id, Group.title == title)
+        group_instance, is_created = await get_or_create(session, Group, sql, department_id=department_id,
+                                                         title=title, schedule_url=url_schedule)
+
+    return group_instance
 
 
 async def just_def(msg: types.Message):
     db_session = msg.bot.get('db')
 
     async with db_session() as session:
-        print(session.query(Group).filter(Group.title.lower() == "ла-п11".lower()))
+        s = select(User).where(User.id == 1)
+        print(type(s), type(select), type(session))

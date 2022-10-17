@@ -64,7 +64,7 @@ async def parse_schedule_tables(url: str) -> list[LessonTuple]:
                     data = LessonTuple(
                         discipline=lesson.get('discipline', _unknown_field),
                         teachers=lesson.get('teacher', []),
-                        locations=lesson.get('location', []),
+                        location=lesson.get('location', _unknown_field),
                         day_number=day_number,
                         week=week_number,
                         lesson_number=lesson_number
@@ -85,17 +85,17 @@ def _sort_lesson(disciplines: list[str], teachers: list[str], locations: list[st
                 teacher = []
             else:
                 try:
-                    teacher = sliced_teachers_names[i]
+                    teacher = [sliced_teachers_names[i]]
                 except IndexError:
                     teacher = []
 
             if not locations:
-                location = []
+                location = _unknown_field
             else:
                 try:
                     location = locations[i]
                 except IndexError:
-                    location = []
+                    location = _unknown_field
 
             lesson = {'discipline': discipline, 'location': location, 'teacher': teacher}
             sort_lessons.append(lesson)
@@ -109,9 +109,9 @@ def _sort_lesson(disciplines: list[str], teachers: list[str], locations: list[st
             teacher = sliced_teachers_names
 
         if not locations:
-            location = []
+            location = _unknown_field
         else:
-            location = locations
+            location = ', '.join(locations)
 
         lesson = {'discipline': discipline, 'location': location, 'teacher': teacher}
         sort_lessons.append(lesson)

@@ -3,7 +3,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 
 from services.other import is_model_exist_by_name
-from services.admin import is_user_admin, add_information_from_schedule_to_db
+from services.admin import is_user_admin, add_information_from_schedule_to_db, just_def, create_group
 from database.models import Faculty, Department, Group, User
 
 
@@ -61,9 +61,17 @@ async def input_url_schedule_for_add_group(msg: types.Message, state: FSMContext
         data['url_schedule'] = msg.text
 
         if data.get('url_schedule', '').startswith('http://epi.kpi.ua'):
-            pass
+            created_group: Group = await create_group(msg, data.get('department_id'), data.get('title'),
+                                                     data.get('url_schedule'))
+            await add_information_from_schedule_to_db(msg, created_group)
+            await msg.answer('Група була створена і розклад скопійовано з сайту.')
+            await state.finish()
         else:
             await msg.answer('Посилання не є валідним чи направлено на сторонній сайт.')
+
+
+async def test(msg: types.Message):
+    await just_def(msg)
 
 
 def register_handlers_admin(dp: Dispatcher):
@@ -71,3 +79,4 @@ def register_handlers_admin(dp: Dispatcher):
     dp.register_message_handler(input_department_for_add_group, state=FSMAddGroup.department)
     dp.register_message_handler(input_title_for_add_group, state=FSMAddGroup.title)
     dp.register_message_handler(input_url_schedule_for_add_group, state=FSMAddGroup.url_schedule)
+    dp.register_message_handler(test, commands=['test'])

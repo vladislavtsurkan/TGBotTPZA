@@ -67,12 +67,12 @@ class Discipline(Base):
 
 
 lesson_teacher = Table('lesson_teacher', Base.metadata,
-                       Column('teacher_id', Integer, ForeignKey('Teachers.id')),
-                       Column('lesson_id', Integer, ForeignKey('Lessons.id')))
+                       Column('lesson_id', Integer, ForeignKey('Lessons.id')),
+                       Column('teacher_id', Integer, ForeignKey('Teachers.id')))
 
 lesson_group = Table('lesson_group', Base.metadata,
-                     Column('group_id', Integer, ForeignKey('Groups.id')),
-                     Column('lesson_id', Integer, ForeignKey('Lessons.id')))
+                     Column('lesson_id', Integer, ForeignKey('Lessons.id')),
+                     Column('group_id', Integer, ForeignKey('Groups.id')))
 
 
 class Lesson(Base):
@@ -85,7 +85,7 @@ class Lesson(Base):
     week = Column(Integer, nullable=False)
     day = Column(Integer, nullable=False)
     number_lesson = Column(Integer, nullable=False)
-    type_and_location = Column(String(50), nullable=False)
+    type_and_location = Column(String(100), nullable=False)
 
     Discipline = relationship('Discipline')
 
