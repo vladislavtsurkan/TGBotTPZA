@@ -1,41 +1,10 @@
-from typing import Any
-from aiogram import types, Dispatcher
+from aiogram import types
 from sqlalchemy import select
-from sqlalchemy.sql.selectable import Select
 
 from database.models import User, Faculty, Department, Group, Discipline, Lesson, Teacher, Task
-
 from parser.parsing import parse_schedule_tables
 from parser.datatypes import LessonTuple
-
-
-async def is_user_admin(msg: types.Message):
-    db_session = msg.bot.get('db')
-
-    async with db_session() as session:
-        sql = select(User).where(User.id == msg.from_user.id)
-        result = await session.execute(sql)
-        user = result.scalars().first()
-
-        if user is not None:
-            return user.is_admin
-        else:
-            await msg.answer('Ви не зареєстровані в системі.')
-            return False
-
-
-async def get_or_create(session, class_model: Any, sql: Select, **kwargs) -> (Any, bool):
-    result = await session.execute(sql)
-    instance = result.scalars().first()
-    if instance is not None:
-        return instance, False
-    else:
-        instance = class_model(**kwargs)
-        await session.merge(instance)
-        await session.commit()
-        result = await session.execute(sql)
-        instance = result.scalars().first()
-        return instance, True
+from services.utils import get_or_create
 
 
 async def add_information_from_schedule_to_db(msg: types.Message, group_instance: Group) -> None:
@@ -66,8 +35,8 @@ async def add_information_from_schedule_to_db(msg: types.Message, group_instance
                 sql_teacher = select(Teacher).where(Teacher.full_name == full_name)
                 teacher_instance, is_created = await get_or_create(session, Teacher, sql_teacher, full_name=full_name)
 
-                teachers = await session.run_sync(lambda session_sync: lesson_instance.teachers)
-                if teacher_instance not in teachers:
+                lesson_teachers = await session.run_sync(lambda session_sync: lesson_instance.teachers)
+                if teacher_instance not in lesson_teachers:
                     await session.run_sync(lambda session_sync: lesson_instance.teachers.append(teacher_instance))
 
             await session.run_sync(lambda session_sync: lesson_instance.groups.append(group_instance))
@@ -85,7 +54,22 @@ async def create_group(msg: types.Message, department_id: int, title: str, url_s
     return group_instance
 
 
-async def just_def(msg: types.Message):
+async def register_user(msg: types.Message, group_id: int) -> bool:
+    db_session = msg.bot.get('db')
+
+    async with db_session() as session:
+        try:
+            await session.merge(
+                User(id=msg.from_user.id, group_id=group_id, is_admin=False)
+            )
+            await session.commit()
+        except Exception:
+            return False
+        else:
+            return True
+
+
+async def just_def(msg: types.Message) -> None:
     db_session = msg.bot.get('db')
 
     async with db_session() as session:

@@ -5,10 +5,10 @@ from database.base import Base
 
 
 class User(Base):
-    __tablename__ = 'Users'
+    __tablename__ = 'bot_users'
 
     id = Column(Integer, primary_key=True)
-    group_id = Column(Integer, ForeignKey('Groups.id'))
+    group_id = Column(Integer, ForeignKey('bot_groups.id'))
     is_admin = Column(Boolean, default=False, nullable=False)
 
     Group = relationship('Group')
@@ -18,7 +18,7 @@ class User(Base):
 
 
 class Faculty(Base):
-    __tablename__ = 'Faculties'
+    __tablename__ = 'bot_faculties'
 
     id = Column(Integer, primary_key=True)
     title = Column(String(50), nullable=False, unique=True)
@@ -29,12 +29,12 @@ class Faculty(Base):
 
 
 class Department(Base):
-    __tablename__ = 'Departments'
+    __tablename__ = 'bot_departments'
 
     id = Column(Integer, primary_key=True)
     title = Column(String(50), nullable=False, unique=True)
     title_short = Column(String(10), nullable=False)
-    faculty_id = Column(Integer, ForeignKey('Faculties.id'))
+    faculty_id = Column(Integer, ForeignKey('bot_faculties.id'))
 
     Faculty = relationship('Faculty')
 
@@ -43,12 +43,12 @@ class Department(Base):
 
 
 class Group(Base):
-    __tablename__ = 'Groups'
+    __tablename__ = 'bot_groups'
 
     id = Column(Integer, primary_key=True)
     title = Column(String(10), unique=True)
     schedule_url = Column(String(200))
-    department_id = Column(Integer, ForeignKey('Departments.id'))
+    department_id = Column(Integer, ForeignKey('bot_departments.id'))
 
     Department = relationship('Department')
 
@@ -57,7 +57,7 @@ class Group(Base):
 
 
 class Discipline(Base):
-    __tablename__ = 'Disciplines'
+    __tablename__ = 'bot_disciplines'
 
     id = Column(Integer, primary_key=True)
     title = Column(String(150), nullable=False, unique=True)
@@ -67,19 +67,19 @@ class Discipline(Base):
 
 
 lesson_teacher = Table('lesson_teacher', Base.metadata,
-                       Column('lesson_id', Integer, ForeignKey('Lessons.id')),
-                       Column('teacher_id', Integer, ForeignKey('Teachers.id')))
+                       Column('lesson_id', Integer, ForeignKey('bot_lessons.id')),
+                       Column('teacher_id', Integer, ForeignKey('bot_teachers.id')))
 
 lesson_group = Table('lesson_group', Base.metadata,
-                     Column('lesson_id', Integer, ForeignKey('Lessons.id')),
-                     Column('group_id', Integer, ForeignKey('Groups.id')))
+                     Column('lesson_id', Integer, ForeignKey('bot_lessons.id')),
+                     Column('group_id', Integer, ForeignKey('bot_groups.id')))
 
 
 class Lesson(Base):
-    __tablename__ = 'Lessons'
+    __tablename__ = 'bot_lessons'
 
     id = Column(Integer, primary_key=True)
-    discipline_id = Column(Integer, ForeignKey('Disciplines.id'))
+    discipline_id = Column(Integer, ForeignKey('bot_disciplines.id'))
     groups = relationship('Group', secondary=lesson_group, backref='lessons')
     teachers = relationship('Teacher', secondary=lesson_teacher, backref='lessons')
     week = Column(Integer, nullable=False)
@@ -94,7 +94,7 @@ class Lesson(Base):
 
 
 class Teacher(Base):
-    __tablename__ = 'Teachers'
+    __tablename__ = 'bot_teachers'
 
     id = Column(Integer, primary_key=True)
     full_name = Column(String(100), unique=True)
@@ -104,10 +104,10 @@ class Teacher(Base):
 
 
 class Task(Base):
-    __tablename__ = 'Tasks'
+    __tablename__ = 'bot_tasks'
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('Users.id'))
+    user_id = Column(Integer, ForeignKey('bot_users.id'))
     description = Column(String(200), nullable=False)
 
     User = relationship('User')

@@ -16,7 +16,7 @@ _headers = {
 
 
 async def parse_schedule_tables(url: str) -> list[LessonTuple]:
-    """Use for parsing schedule in http://epi.kpi.ua"""
+    """Use for parsing schedule from http://epi.kpi.ua"""
     async with aiohttp.ClientSession() as session:
         async with session.get(url, allow_redirects=True) as response:
             data = await response.read()

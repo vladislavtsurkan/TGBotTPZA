@@ -1,10 +1,9 @@
 from aiogram import types, Dispatcher
 from aiogram.utils.exceptions import BotBlocked
-from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters.state import State, StatesGroup
 
-from database.models import Group
-from services.other import get_information_all_users, is_registered_user, register_user, is_model_exist_by_name
+from handlers.fsm.registration import register_handlers_fsm_registration, FSMRegistration
+from services.other import get_information_all_users
+from services.utils import is_registered_user
 
 
 async def error_bot_blocked(update: types.Update, exception: BotBlocked):
@@ -30,7 +29,7 @@ async def get_text_messages(msg: types.Message):
     else:
         match msg.text.lower():
             case 'тратата':
-                information = await get_information_all_users(msg)
+                await get_information_all_users(msg)
                 # print(information)
 
             case 'сайт' | 'site':
@@ -46,30 +45,7 @@ async def get_text_messages(msg: types.Message):
                 await msg.answer('Я вас не розумію.')
 
 
-class FSMRegistration(StatesGroup):
-    group = State()
-
-
-async def input_name_group(msg: types.Message, state: FSMContext):
-    async with state.proxy() as data:
-        data['group'] = msg.text
-
-        is_exist, group_id = await is_model_exist_by_name(msg, data['group'], class_model=Group)
-
-        if is_exist:
-            if await register_user(msg, group_id):
-                await msg.answer('Ви були успішно зареєстровані!')
-                await state.finish()
-            else:
-                await msg.answer('На жаль, сталась помилка при реєстрації. Спробуйте ще раз ввести назву своєї групи.')
-                await FSMRegistration.group.set()
-        else:
-            await msg.answer('Даної групи не було знайдено в базі даних. '
-                             'Перевірте відправлений текст на помилки та спробуйте ще раз.')
-            await FSMRegistration.group.set()
-
-
 def register_handlers_other(dp: Dispatcher):
+    register_handlers_fsm_registration(dp)
     dp.register_errors_handler(error_bot_blocked, exception=BotBlocked)
-    dp.register_message_handler(input_name_group, state=FSMRegistration.group)
     dp.register_message_handler(get_text_messages, content_types=['text'])

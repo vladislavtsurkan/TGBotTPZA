@@ -1,14 +1,14 @@
 import asyncio
 
 from aiogram import Bot, Dispatcher
-from aiogram.contrib.fsm_storage.redis import RedisStorage2
+from aiogram.contrib.fsm_storage.mongo import MongoStorage
 
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 
-from config_loader import Config, load_config
+from config_loader import load_config_bot
 from handlers import client, other, admin
-from database.base import Base
+from database.base import Base, get_sqlalchemy_url
 
 
 async def on_startup(dp):
@@ -21,9 +21,9 @@ async def on_startup(dp):
 
 
 async def main():
-    config: Config = load_config()
+
     engine = create_async_engine(
-        f'mysql+asyncmy://{config.db.user}:{config.db.password}@{config.db.host}/{config.db.db_name}',
+        get_sqlalchemy_url(),
         future=True
     )
 
@@ -34,10 +34,12 @@ async def main():
         engine, expire_on_commit=False, class_=AsyncSession
     )
 
-    bot = Bot(token=config.bot.token, parse_mode='HTML')
+    config_bot = load_config_bot()
+    bot = Bot(token=config_bot.token, parse_mode='HTML')
     bot['db'] = async_sessionmaker
     bot['ids_skip_check_registered'] = set()
-    storage = RedisStorage2('localhost', 6379, db=5, pool_size=10, prefix='my_fsm_key')
+    # storage = RedisStorage2('localhost', 6379, db=5, pool_size=10, prefix='my_fsm_key')
+    storage = MongoStorage(host='localhost', port=27017, db_name='aiogram_fsm')
     dp = Dispatcher(bot, storage=storage)
 
     await on_startup(dp)
