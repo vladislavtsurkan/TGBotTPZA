@@ -1,10 +1,22 @@
 from typing import Any
 from aiogram import types
+from aiogram.dispatcher import FSMContext
 from sqlalchemy import select
 from sqlalchemy.sql.selectable import Select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.models import User, Group, Department, Faculty
+
+_cancel_words = {'відміна', 'cancel', 'stop', 'стоп', '-', 'отмена'}
+
+
+async def is_cancel_fsm(msg: types.Message, state: FSMContext) -> bool:
+    if msg.text.lower() in _cancel_words:
+        await msg.answer('Дію було відмінено.')
+        await state.finish()
+        return True
+    else:
+        return False
 
 
 async def is_user_admin(msg: types.Message) -> bool:
@@ -37,7 +49,7 @@ async def get_or_create(session: AsyncSession, class_model: Any, sql: Select, **
 
 
 async def is_registered_user(msg: types.Message) -> bool:
-    ids_skip: set = msg.bot.get('ids_skip_check_registered')
+    ids_skip: set[int] = msg.bot.get('ids_skip_check_registered')
 
     if (id_user := msg.from_user.id) in ids_skip:
         return True

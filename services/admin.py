@@ -1,5 +1,6 @@
 from aiogram import types
 from sqlalchemy import select
+from aiohttp.client_exceptions import ClientConnectorError
 
 from database.models import User, Faculty, Department, Group, Discipline, Lesson, Teacher, Task
 from parser.parsing import parse_schedule_tables
@@ -9,7 +10,10 @@ from services.utils import get_or_create
 
 async def add_information_from_schedule_to_db(msg: types.Message, group_instance: Group) -> None:
     db_session = msg.bot.get('db')
-    schedule_lessons_tuple: list[LessonTuple] = await parse_schedule_tables(group_instance.schedule_url)
+    try:
+        schedule_lessons_tuple: list[LessonTuple] = await parse_schedule_tables(group_instance.schedule_url)
+    except ClientConnectorError:
+        return
 
     async with db_session() as session:
         for lesson in schedule_lessons_tuple:
@@ -43,7 +47,31 @@ async def add_information_from_schedule_to_db(msg: types.Message, group_instance
             await session.commit()
 
 
-async def create_group(msg: types.Message, department_id: int, title: str, url_schedule: str):
+async def create_faculty(msg: types.Message, title: str, title_short: str):
+    db_session = msg.bot.get('db')
+
+    async with db_session() as session:
+        sql = select(Faculty).where(Faculty.title == title)
+        faculty_instance, is_created = await get_or_create(
+            session, Faculty, sql, title=title, title_short=title_short
+        )
+
+    return faculty_instance
+
+
+async def create_department(msg: types.Message, faculty_id: int, title: str, title_short: str) -> Department:
+    db_session = msg.bot.get('db')
+
+    async with db_session() as session:
+        sql = select(Department).where(Department.title == title)
+        department_instance, is_created = await get_or_create(
+            session, Department, sql, faculty_id=faculty_id, title=title, title_short=title_short
+        )
+
+    return department_instance
+
+
+async def create_group(msg: types.Message, department_id: int, title: str, url_schedule: str) -> Group:
     db_session = msg.bot.get('db')
 
     async with db_session() as session:
