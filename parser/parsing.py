@@ -1,10 +1,10 @@
 import asyncio
 import aiohttp
-
 from bs4 import BeautifulSoup
 from time import time
-from parser.datatypes import LessonTuple
 from pprint import pprint
+
+from parser.datatypes import LessonTuple
 
 _unknown_field = "Немає інформації"
 _set_days_of_week = {"Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця", "Субота"}
@@ -18,7 +18,7 @@ _headers = {
 async def parse_schedule_tables(url: str) -> list[LessonTuple]:
     """Use for parsing schedule from http://epi.kpi.ua"""
     async with aiohttp.ClientSession() as session:
-        async with session.get(url, allow_redirects=True) as response:
+        async with session.get(url, allow_redirects=True, headers=_headers) as response:
             data = await response.read()
 
     soup = BeautifulSoup(data, "lxml")
