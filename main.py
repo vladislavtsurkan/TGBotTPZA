@@ -8,12 +8,14 @@ from sqlalchemy.orm import sessionmaker
 
 from config_loader import load_config_bot, BotConfig, load_config_mongo_db, MongoDB
 from handlers import client, other, admin
+from handlers.fsm.register_fsms import register_all_fsms
 from database.base import Base, get_sqlalchemy_url
 
 
 async def on_startup(dp):
     print("The bot launch process has been started.")
     await other.set_default_commands(dp)
+    register_all_fsms(dp)
     admin.register_handlers_admin(dp)
     client.register_handlers_client(dp)
     other.register_handlers_other(dp)

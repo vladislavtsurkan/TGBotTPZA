@@ -3,7 +3,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 
 from services.admin import create_department
-from services.utils import is_cancel_fsm, is_user_admin, is_model_exist_by_name
+from services.utils import is_user_admin, is_model_exist_by_name
 from database.models import Faculty, Department
 
 
@@ -20,9 +20,6 @@ async def start_add_new_department(msg: types.Message):
 
 
 async def input_faculty_for_add_department(msg: types.Message, state: FSMContext):
-    if await is_cancel_fsm(msg, state):
-        return
-
     async with state.proxy() as data:
         data['faculty_name'] = msg.text
 
@@ -36,9 +33,6 @@ async def input_faculty_for_add_department(msg: types.Message, state: FSMContext
 
 
 async def input_title_for_add_department(msg: types.Message, state: FSMContext):
-    if await is_cancel_fsm(msg, state):
-        return
-
     async with state.proxy() as data:
         data['title'] = msg.text
 
@@ -51,9 +45,6 @@ async def input_title_for_add_department(msg: types.Message, state: FSMContext):
 
 
 async def input_title_short_for_add_department(msg: types.Message, state: FSMContext):
-    if await is_cancel_fsm(msg, state):
-        return
-
     async with state.proxy() as data:
         data['title_short'] = msg.text
 

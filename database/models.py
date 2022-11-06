@@ -46,7 +46,7 @@ class Group(Base):
     __tablename__ = 'bot_groups'
 
     id = Column(Integer, primary_key=True)
-    title = Column(String(10), unique=True)
+    title = Column(String(10))
     schedule_url = Column(String(200))
     department_id = Column(Integer, ForeignKey('bot_departments.id'))
 

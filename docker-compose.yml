@@ -13,7 +13,7 @@ services:
       DB_USER: aiogram
       DB_PASS: aiogram
       DB_NAME: schedule_bot_db
-      BOT_TOKEN:
+      BOT_TOKEN: 5740240406:AAHqlN-bos-fmmuKAjrkwHp-NFujf_0sk5E
     links:
       - mysql
       - mongo

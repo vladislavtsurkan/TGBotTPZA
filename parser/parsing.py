@@ -8,7 +8,6 @@ from parser.datatypes import LessonTuple
 
 _unknown_field = "Немає інформації"
 _set_days_of_week = {"Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця", "Субота"}
-
 _headers = {
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
     'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:105.0) Gecko/20100101 Firefox/105.0'

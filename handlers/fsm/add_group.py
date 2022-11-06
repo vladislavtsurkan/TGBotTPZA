@@ -3,7 +3,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 
 from services.admin import add_information_from_schedule_to_db, create_group
-from services.utils import is_cancel_fsm, is_user_admin, is_model_exist_by_name
+from services.utils import is_user_admin, is_model_exist_by_name
 from database.models import Department, Group
 
 
@@ -20,9 +20,6 @@ async def start_add_new_group(msg: types.Message):
 
 
 async def input_department_for_add_group(msg: types.Message, state: FSMContext):
-    if await is_cancel_fsm(msg, state):
-        return
-
     async with state.proxy() as data:
         data['department_name'] = msg.text
 
@@ -36,9 +33,6 @@ async def input_department_for_add_group(msg: types.Message, state: FSMContext):
 
 
 async def input_title_for_add_group(msg: types.Message, state: FSMContext):
-    if await is_cancel_fsm(msg, state):
-        return
-
     async with state.proxy() as data:
         data['title'] = msg.text
 
@@ -51,9 +45,6 @@ async def input_title_for_add_group(msg: types.Message, state: FSMContext):
 
 
 async def input_url_schedule_for_add_group(msg: types.Message, state: FSMContext):
-    if await is_cancel_fsm(msg, state):
-        return
-
     async with state.proxy() as data:
         data['url_schedule'] = msg.text
 

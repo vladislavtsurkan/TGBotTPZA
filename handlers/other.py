@@ -1,7 +1,7 @@
 from aiogram import types, Dispatcher
 from aiogram.utils.exceptions import BotBlocked
 
-from handlers.fsm.registration import register_handlers_fsm_registration, FSMRegistration
+from handlers.fsm.registration import FSMRegistration
 from services.other import get_information_all_users
 from services.utils import is_registered_user
 
@@ -46,6 +46,5 @@ async def get_text_messages(msg: types.Message):
 
 
 def register_handlers_other(dp: Dispatcher):
-    register_handlers_fsm_registration(dp)
     dp.register_errors_handler(error_bot_blocked, exception=BotBlocked)
     dp.register_message_handler(get_text_messages, content_types=['text'])

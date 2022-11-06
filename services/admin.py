@@ -1,8 +1,9 @@
 from aiogram import types
-from sqlalchemy import select
+from sqlalchemy import select, delete, update
 from aiohttp.client_exceptions import ClientConnectorError
+from sqlalchemy.orm import joinedload
 
-from database.models import User, Faculty, Department, Group, Discipline, Lesson, Teacher, Task
+from database.models import User, Faculty, Department, Group, Discipline, Lesson, Teacher, Task, lesson_group
 from parser.parsing import parse_schedule_tables
 from parser.datatypes import LessonTuple
 from services.utils import get_or_create
@@ -47,7 +48,7 @@ async def add_information_from_schedule_to_db(msg: types.Message, group_instance
             await session.commit()
 
 
-async def create_faculty(msg: types.Message, title: str, title_short: str):
+async def create_faculty(msg: types.Message, title: str, title_short: str) -> Faculty:
     db_session = msg.bot.get('db')
 
     async with db_session() as session:
@@ -80,6 +81,34 @@ async def create_group(msg: types.Message, department_id: int, title: str, url_s
                                                          title=title, schedule_url=url_schedule)
 
     return group_instance
+
+
+async def get_information_group(msg: types.Message, *, group_id, department_id) -> Group:
+    db_session = msg.bot.get('db')
+
+    async with db_session() as session:
+        sql_group_info = select(Group, Department, Faculty).where(
+            Group.department_id == Department.id,
+            Department.faculty_id == Faculty.id,
+            Group.department_id == department_id,
+            Group.id == group_id
+        ).options(joinedload(Group.Department).subqueryload(Department.Faculty))
+        result = await session.execute(sql_group_info)
+        group: Group = result.scalars().first()
+
+        return group
+
+
+async def delete_group(msg: types.Message, group_id, department_id) -> None:
+    db_session = msg.bot.get('db')
+
+    async with db_session() as session:
+        sql_group_table = delete(Group).where(Group.department_id == department_id, Group.id == group_id)
+        sql_group_lesson_table = delete(lesson_group).where(lesson_group.group_id == group_id)
+        sql_user_group = update(User).where(User.group_id == group_id).values(group_id=0)
+
+        await session.executemany(sql_group_table, sql_group_lesson_table, sql_user_group)
+        await session.commit()
 
 
 async def register_user(msg: types.Message, group_id: int) -> bool:
