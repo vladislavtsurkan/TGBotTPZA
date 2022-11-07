@@ -3,7 +3,7 @@ from sqlalchemy import select, delete, update
 from aiohttp.client_exceptions import ClientConnectorError
 from sqlalchemy.orm import joinedload
 
-from database.models import User, Faculty, Department, Group, Discipline, Lesson, Teacher, Task, lesson_group
+from database.models import User, Faculty, Department, Group, Discipline, Lesson, Teacher
 from parser.parsing import parse_schedule_tables
 from parser.datatypes import LessonTuple
 from services.utils import get_or_create
@@ -99,16 +99,54 @@ async def get_information_group(msg: types.Message, *, group_id, department_id) 
         return group
 
 
-async def delete_group(msg: types.Message, group_id, department_id) -> None:
+async def delete_group(msg: types.Message | types.CallbackQuery, *, group_id: int, department_id: int) -> None:
     db_session = msg.bot.get('db')
 
     async with db_session() as session:
         sql_group_table = delete(Group).where(Group.department_id == department_id, Group.id == group_id)
-        sql_group_lesson_table = delete(lesson_group).where(lesson_group.group_id == group_id)
-        sql_user_group = update(User).where(User.group_id == group_id).values(group_id=0)
+        sql_group_lesson_table = f'DELETE FROM lesson_group WHERE group_id = {group_id}'
+        sql_user_group = delete(User).where(User.group_id == group_id)
 
-        await session.executemany(sql_group_table, sql_group_lesson_table, sql_user_group)
+        await session.execute(sql_group_lesson_table)
+        await session.execute(sql_group_table)
+        await session.execute(sql_user_group)
         await session.commit()
+
+
+async def change_title_group(msg: types.Message, new_title: str, *, group_id: int, department_id: int) -> None:
+    db_session = msg.bot.get('db')
+
+    async with db_session() as session:
+        sql = update(Group).where(Group.id == group_id, Group.department_id == department_id).values(title=new_title)
+        await session.execute(sql)
+        await session.commit()
+
+
+async def change_department_group(msg: types.Message, new_department_id: str, *, group_id: int,
+                                  department_id: int) -> None:
+    db_session = msg.bot.get('db')
+
+    async with db_session() as session:
+        sql = update(Group).where(Group.id == group_id, Group.department_id == department_id).\
+            values(department_id=new_department_id)
+        await session.execute(sql)
+        await session.commit()
+
+
+async def change_url_schedule_group(msg: types.Message, new_url: str, *, group_id) -> None:
+    db_session = msg.bot.get('db')
+
+    async with db_session() as session:
+        sql_update_url = update(Group).where(Group.id == group_id).values(schedule_url=new_url)
+        sql_group_lesson_table = f'DELETE FROM lesson_group WHERE group_id = {group_id}'
+        await session.execute(sql_group_lesson_table)
+        await session.execute(sql_update_url)
+        await session.commit()
+        sql_group = select(Group).where(Group.id == group_id)
+        result = await session.execute(sql_group)
+        group_instance = result.scalars().first()
+
+    await add_information_from_schedule_to_db(msg, group_instance)
 
 
 async def register_user(msg: types.Message, group_id: int) -> bool:
