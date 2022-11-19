@@ -1,10 +1,11 @@
 cryptography==38.0.3
 aiogram==2.23.1
 aiohttp==3.8.3
-pymongo==4.3.2
+pymongo==4.3.3
 motor==3.1.1
 asyncmy==0.2.5
 beautifulsoup4==4.11.1
 lxml==4.9.1
-SQLAlchemy==1.4.43
+SQLAlchemy==1.4.44
 alembic==1.8.1
+loguru==0.6.0

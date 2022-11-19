@@ -1,3 +1,5 @@
+from loguru import logger
+
 from aiogram import Dispatcher, types
 from aiogram.dispatcher.filters import Text
 from aiogram.dispatcher import FSMContext
@@ -16,17 +18,19 @@ async def cancel_handler(msg: types.Message, state: FSMContext):
     await msg.answer('Дію було відмінено.')
 
 
-def register_all_fsms(dp: Dispatcher):
+def register_all_fsm_handlers(dp: Dispatcher):
+    logger.debug('Start registration handlers for FSM')
     dp.register_message_handler(cancel_handler, state='*', commands=['відміна', 'stop', 'cancel'])
     dp.register_message_handler(cancel_handler, Text(
-        equals=['відміна', 'cancel', 'stop', 'стоп', '-', 'отмена'], ignore_case=True
+        equals=['відміна', 'cancel', 'stop', 'стоп', '-', 'отмена', 'выйти', 'вийти'], ignore_case=True
     ), state='*')
-
-    # other
-    register_handlers_fsm_registration(dp)
 
     # admin
     register_handlers_fsm_add_group(dp)
     register_handlers_fsm_add_faculty(dp)
     register_handlers_fsm_add_department(dp)
     register_handlers_fsm_edit_group(dp)
+
+    # other
+    register_handlers_fsm_registration(dp)
+    logger.debug('Stop registration handlers for FSM')

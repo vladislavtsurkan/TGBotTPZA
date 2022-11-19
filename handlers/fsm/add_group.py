@@ -2,7 +2,12 @@ from aiogram import types, Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 
-from services.admin import add_information_from_schedule_to_db, create_group
+from services.admin import (
+    add_information_from_schedule_to_db,
+    create_group,
+    delete_group,
+    is_group_exist_by_title_and_department_id
+)
 from services.utils import is_user_admin, is_model_exist_by_name
 from database.models import Department, Group
 
@@ -36,9 +41,11 @@ async def input_title_for_add_group(msg: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['title'] = msg.text
 
-        is_exist, group_id = await is_model_exist_by_name(msg, msg.text, class_model=Group)
+        is_exist, group_instance = await is_group_exist_by_title_and_department_id(
+            msg, data['title'], data['department_id']
+        )
         if is_exist:
-            await msg.answer('Помилка. Група з такою назвою вже існує.')
+            await msg.answer('Помилка. Група з такою назвою на вказаній кафедрі вже існує.')
         else:
             await msg.answer('Тепер відправте посилання на розклад групи з <a href="http://epi.kpi.ua">сайту</a>.')
             await FSMAddGroup.next()
@@ -51,8 +58,12 @@ async def input_url_schedule_for_add_group(msg: types.Message, state: FSMContext
         if data.get('url_schedule', '').startswith('http://epi.kpi.ua'):
             created_group: Group = await create_group(msg, data.get('department_id'), data.get('title'),
                                                       data.get('url_schedule'))
-            await add_information_from_schedule_to_db(msg, created_group)
-            await msg.answer('Група була створена і розклад скопійовано з сайту.')
+            result = await add_information_from_schedule_to_db(msg, created_group)
+            if result:
+                await msg.answer('Група була створена і розклад скопійовано з сайту.')
+            else:
+                await msg.answer('Збір даних з сайту не вдався через проблеми в його роботі.')
+                await delete_group(msg, group_id=created_group.id, department_id=created_group.department_id)
             await state.finish()
         else:
             await msg.answer('Посилання не є валідним чи направлено на сторонній сайт.')

@@ -1,4 +1,5 @@
 import asyncio
+from loguru import logger
 
 from aiogram import Bot, Dispatcher
 from aiogram.contrib.fsm_storage.mongo import MongoStorage
@@ -6,20 +7,22 @@ from aiogram.contrib.fsm_storage.mongo import MongoStorage
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 
-from config_loader import load_config_bot, BotConfig, load_config_mongo_db, MongoDB
+from config_loader import load_config_bot, BotConfig, load_config_mongo_db, MongoDBConfig
 from handlers import client, other, admin
-from handlers.fsm.register_fsms import register_all_fsms
+from handlers.registration_all_fsm_handlers import register_all_fsm_handlers
 from database.base import Base, get_sqlalchemy_url
+
+logger.add('logs/bot.log', rotation='10 MB', compression='zip', enqueue=True, level="WARNING")
 
 
 async def on_startup(dp):
-    print("The bot launch process has been started.")
+    logger.debug("The bot launch process has been started.")
     await other.set_default_commands(dp)
-    register_all_fsms(dp)
+    register_all_fsm_handlers(dp)
     admin.register_handlers_admin(dp)
     client.register_handlers_client(dp)
     other.register_handlers_other(dp)
-    print('The bot launch process has been completed.')
+    logger.debug('The bot launch process has been completed.')
 
 
 async def main():
@@ -40,7 +43,7 @@ async def main():
     bot['db'] = async_sessionmaker
     bot['ids_skip_check_registered'] = set()
 
-    config_mongo: MongoDB = load_config_mongo_db()
+    config_mongo: MongoDBConfig = load_config_mongo_db()
     storage = MongoStorage(host=config_mongo.host, port=config_mongo.port, db_name=config_mongo.db_name)
     dp = Dispatcher(bot, storage=storage)
 
@@ -59,4 +62,4 @@ if __name__ == '__main__':
     try:
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
-        print("Bot stopped!")
+        logger.debug("Bot stopped!")

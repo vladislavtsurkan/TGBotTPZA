@@ -1,3 +1,5 @@
+from loguru import logger
+
 from aiogram import types, Dispatcher
 from aiogram.utils.exceptions import BotBlocked
 
@@ -13,9 +15,12 @@ async def error_bot_blocked(update: types.Update, exception: BotBlocked):
 
 
 async def set_default_commands(dp: Dispatcher):
+    logger.debug("Start set default commands for bot")
     await dp.bot.set_my_commands([
         types.BotCommand("help", "Інформація"),
+        types.BotCommand("cancel", "Відміна дії"),
     ])
+    logger.debug("Success set default commands for bot")
 
 
 async def get_text_messages(msg: types.Message):
@@ -30,7 +35,6 @@ async def get_text_messages(msg: types.Message):
         match msg.text.lower():
             case 'тратата':
                 await get_information_all_users(msg)
-                # print(information)
 
             case 'сайт' | 'site':
                 await msg.answer('<a href="http://epi.kpi.ua">Розклад КПІ</a>')
@@ -46,5 +50,7 @@ async def get_text_messages(msg: types.Message):
 
 
 def register_handlers_other(dp: Dispatcher):
+    logger.debug('Start registration handlers for "other"')
     dp.register_errors_handler(error_bot_blocked, exception=BotBlocked)
     dp.register_message_handler(get_text_messages, content_types=['text'])
+    logger.debug('Stop registration handlers for "other"')

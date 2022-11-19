@@ -1,7 +1,7 @@
+from loguru import logger
 from aiogram import types, Dispatcher
-from aiogram.dispatcher.filters import Text
 
-from services.admin import just_def, delete_group
+from services.admin import just_def
 
 
 async def test(msg: types.Message):
@@ -9,5 +9,6 @@ async def test(msg: types.Message):
 
 
 def register_handlers_admin(dp: Dispatcher):
+    logger.debug('Start registration handlers for admin')
     dp.register_message_handler(test, commands=['test'])
-    # dp.register_callback_query_handler(group_edit_callback, Text(startswith='group'))
+    logger.debug('Stop registration handlers for admin')

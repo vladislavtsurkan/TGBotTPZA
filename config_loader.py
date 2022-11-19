@@ -6,21 +6,21 @@ class BotConfig(NamedTuple):
     token: str
 
 
-class DB(NamedTuple):
+class DatabaseConfig(NamedTuple):
     host: str
     db_name: str
     user: str
     password: str
 
 
-class MongoDB(NamedTuple):
+class MongoDBConfig(NamedTuple):
     host: str
     port: int
     db_name: str
 
 
-def load_config_db() -> DB:
-    return DB(
+def load_config_db() -> DatabaseConfig:
+    return DatabaseConfig(
         host=getenv("DB_HOST"),
         db_name=getenv("DB_NAME"),
         user=getenv("DB_USER"),
@@ -28,8 +28,8 @@ def load_config_db() -> DB:
     )
 
 
-def load_config_mongo_db() -> MongoDB:
-    return MongoDB(
+def load_config_mongo_db() -> MongoDBConfig:
+    return MongoDBConfig(
         host=getenv("MONGO_DB_HOST"),
         port=int(getenv("MONGO_DB_PORT")),
         db_name=getenv("MONGO_DB_NAME")

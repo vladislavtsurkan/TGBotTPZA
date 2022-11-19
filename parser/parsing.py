@@ -101,16 +101,8 @@ def _sort_lesson(disciplines: list[str], teachers: list[str], locations: list[st
 
     else:
         discipline = disciplines[0]
-
-        if not teachers:
-            teacher = []
-        else:
-            teacher = sliced_teachers_names
-
-        if not locations:
-            location = _unknown_field
-        else:
-            location = ', '.join(locations)
+        teacher = [] if not teachers else sliced_teachers_names
+        location = _unknown_field if not locations else ', '.join(locations)
 
         lesson = {'discipline': discipline, 'location': location, 'teacher': teacher}
         sort_lessons.append(lesson)

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, String, Integer, Boolean, Table
+from sqlalchemy import Column, ForeignKey, String, Integer, Boolean, Table, UniqueConstraint
 from sqlalchemy.orm import relationship
 
 from database.base import Base
@@ -49,6 +49,7 @@ class Group(Base):
     title = Column(String(10))
     schedule_url = Column(String(200))
     department_id = Column(Integer, ForeignKey('bot_departments.id'))
+    __table_args__ = (UniqueConstraint('department_id', 'title', name='_department_id_title_str_uc'), )
 
     Department = relationship('Department')
 
@@ -113,4 +114,4 @@ class Task(Base):
     User = relationship('User')
 
     def __repr__(self):
-        return f'<Task by User {self.user_id}>'
+        return f'<Task #{self.id} by User {self.user_id}>'

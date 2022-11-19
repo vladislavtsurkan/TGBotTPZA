@@ -1,2 +1,3 @@
 venv
 alembic.zsh
+logs/*

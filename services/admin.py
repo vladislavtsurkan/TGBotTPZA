@@ -1,7 +1,10 @@
+from loguru import logger
+
 from aiogram import types
 from sqlalchemy import select, delete, update
-from aiohttp.client_exceptions import ClientConnectorError
 from sqlalchemy.orm import joinedload
+from sqlalchemy.exc import SQLAlchemyError
+from aiohttp.client_exceptions import ClientConnectorError
 
 from database.models import User, Faculty, Department, Group, Discipline, Lesson, Teacher
 from parser.parsing import parse_schedule_tables
@@ -9,12 +12,14 @@ from parser.datatypes import LessonTuple
 from services.utils import get_or_create
 
 
-async def add_information_from_schedule_to_db(msg: types.Message, group_instance: Group) -> None:
+async def add_information_from_schedule_to_db(msg: types.Message, group_instance: Group) -> bool:
+    """Added information from schedule to database tables"""
     db_session = msg.bot.get('db')
     try:
         schedule_lessons_tuple: list[LessonTuple] = await parse_schedule_tables(group_instance.schedule_url)
     except ClientConnectorError:
-        return
+        logger.warning('Failed try get schedule from site')
+        return False
 
     async with db_session() as session:
         for lesson in schedule_lessons_tuple:
@@ -44,8 +49,12 @@ async def add_information_from_schedule_to_db(msg: types.Message, group_instance
                 if teacher_instance not in lesson_teachers:
                     await session.run_sync(lambda session_sync: lesson_instance.teachers.append(teacher_instance))
 
-            await session.run_sync(lambda session_sync: lesson_instance.groups.append(group_instance))
-            await session.commit()
+            lesson_groups = await session.run_sync(lambda session_sync: lesson_instance.groups)
+            if group_instance not in lesson_groups:
+                await session.run_sync(lambda session_sync: lesson_instance.groups.append(group_instance))
+
+        await session.commit()
+    return True
 
 
 async def create_faculty(msg: types.Message, title: str, title_short: str) -> Faculty:
@@ -81,6 +90,30 @@ async def create_group(msg: types.Message, department_id: int, title: str, url_s
                                                          title=title, schedule_url=url_schedule)
 
     return group_instance
+
+
+async def get_groups_by_title(msg: types.Message, title: str) -> list[Group]:
+    db_session = msg.bot.get('db')
+
+    async with db_session() as session:
+        sql_groups = select(Group, Department, Faculty).where(
+            Group.department_id == Department.id,
+            Department.faculty_id == Faculty.id,
+            Group.title == title
+        ).options(joinedload(Group.Department).subqueryload(Department.Faculty))
+        result = await session.execute(sql_groups)
+        return list(result.scalars())
+
+
+async def is_group_exist_by_title_and_department_id(msg: types.Message, title: str, department_id: int) -> \
+        (bool, Group | None):
+    db_session = msg.bot.get('db')
+
+    async with db_session() as session:
+        sql = select(Group).where(Group.title == title, Group.department_id == department_id)
+        result = await session.execute(sql)
+        group_instance = result.scalars().first()
+        return (is_exist := (group_instance is not None)), group_instance if is_exist else None
 
 
 async def get_information_group(msg: types.Message, *, group_id, department_id) -> Group:
@@ -133,7 +166,7 @@ async def change_department_group(msg: types.Message, new_department_id: str, *,
         await session.commit()
 
 
-async def change_url_schedule_group(msg: types.Message, new_url: str, *, group_id) -> None:
+async def change_url_schedule_group(msg: types.Message, new_url: str, *, group_id) -> bool:
     db_session = msg.bot.get('db')
 
     async with db_session() as session:
@@ -146,10 +179,10 @@ async def change_url_schedule_group(msg: types.Message, new_url: str, *, group_i
         result = await session.execute(sql_group)
         group_instance = result.scalars().first()
 
-    await add_information_from_schedule_to_db(msg, group_instance)
+    return await add_information_from_schedule_to_db(msg, group_instance)
 
 
-async def register_user(msg: types.Message, group_id: int) -> bool:
+async def register_user(msg: types.Message | types.CallbackQuery, group_id: int) -> bool:
     db_session = msg.bot.get('db')
 
     async with db_session() as session:
@@ -158,7 +191,8 @@ async def register_user(msg: types.Message, group_id: int) -> bool:
                 User(id=msg.from_user.id, group_id=group_id, is_admin=False)
             )
             await session.commit()
-        except Exception:
+        except SQLAlchemyError:
+            logger.error('Failed try save new User in database')
             return False
         else:
             return True
