@@ -1,4 +1,5 @@
 import asyncio
+from pathlib import Path
 from loguru import logger
 
 from aiogram import Bot, Dispatcher
@@ -11,6 +12,10 @@ from config_loader import load_config_bot, BotConfig, load_config_mongo_db, Mong
 from handlers import client, other, admin
 from handlers.registration_all_fsm_handlers import register_all_fsm_handlers
 from database.base import Base, get_sqlalchemy_url
+
+logs_folder = Path("logs")
+if not logs_folder.exists():
+    Path.mkdir(logs_folder)
 
 logger.add('logs/bot.log', rotation='10 MB', compression='zip', enqueue=True, level="WARNING")
 
