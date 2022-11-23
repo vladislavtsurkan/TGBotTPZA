@@ -24,10 +24,7 @@ async def set_default_commands(dp: Dispatcher):
 
 
 async def get_text_messages(msg: types.Message):
-    # await msg.answer('Я вас не розумію.')
-    # await msg.answer('<a href="https://google.com">Kek</a>')
     print(f'{msg}')
-    # sql = select(Group).filter(Group.title == 'ла-п11')
     if not await is_registered_user(msg):
         await msg.answer('Ви ще не зареєстровані. Будь ласка, введіть назву Вашої групи.')
         await FSMRegistration.group.set()

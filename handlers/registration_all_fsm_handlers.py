@@ -8,6 +8,8 @@ from handlers.fsm.add_group import register_handlers_fsm_add_group
 from handlers.fsm.add_faculty import register_handlers_fsm_add_faculty
 from handlers.fsm.add_department import register_handlers_fsm_add_department
 from handlers.fsm.edit_group import register_handlers_fsm_edit_group
+from handlers.fsm.edit_department import register_handlers_fsm_edit_department
+from handlers.fsm.edit_faculty import register_handlers_fsm_edit_faculty
 from handlers.fsm.registration import register_handlers_fsm_registration
 
 
@@ -30,6 +32,8 @@ def register_all_fsm_handlers(dp: Dispatcher):
     register_handlers_fsm_add_faculty(dp)
     register_handlers_fsm_add_department(dp)
     register_handlers_fsm_edit_group(dp)
+    register_handlers_fsm_edit_department(dp)
+    register_handlers_fsm_edit_faculty(dp)
 
     # other
     register_handlers_fsm_registration(dp)

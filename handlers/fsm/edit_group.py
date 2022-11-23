@@ -3,8 +3,9 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.dispatcher.filters import Text
 
-from services.admin import (get_information_group, change_title_group, delete_group, change_url_schedule_group,
-                            change_department_group)
+from services.admin import (
+    get_group_instance_by_id, change_title_group, delete_group, change_url_schedule_group, change_department_for_group
+)
 from services.utils import is_user_admin, is_model_exist_by_name
 from keyboards.kb_edit_group import get_keyboard_edit_group
 from database.models import Department, Group
@@ -45,7 +46,7 @@ async def input_title_for_edit_group(msg: types.Message, state: FSMContext) -> N
         is_exist, group_id = await is_model_exist_by_name(msg, msg.text, class_model=Group)
         if is_exist:
             data['group_id'] = group_id
-            group = await get_information_group(msg, group_id=group_id, department_id=data['department_id'])
+            group = await get_group_instance_by_id(msg, group_id=group_id, department_id=data['department_id'])
             await msg.answer(f'<b>Інформація про групу</b>\n'
                              f'Факультет: {group.Department.Faculty.title} ({group.Department.Faculty.title_short})\n'
                              f'Кафедра: {group.Department.title} ({group.Department.title_short})\n'
@@ -107,8 +108,8 @@ async def input_new_department_for_edit_group(msg: types.Message, state: FSMCont
         is_exist, department_id = await is_model_exist_by_name(msg, msg.text, class_model=Department)
         if is_exist:
             data['new_department_id'] = department_id
-            await change_department_group(msg, data['new_department_id'], group_id=data['group_id'],
-                                          department_id=data['department_id'])
+            await change_department_for_group(msg, data['new_department_id'], group_id=data['group_id'],
+                                              department_id=data['department_id'])
             await msg.answer('Кафедру було успішно замінено!')
             await state.finish()
         else:

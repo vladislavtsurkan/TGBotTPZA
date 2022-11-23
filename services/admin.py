@@ -69,6 +69,42 @@ async def create_faculty(msg: types.Message, title: str, title_short: str) -> Fa
     return faculty_instance
 
 
+async def get_faculty_instance_by_title(msg: types.Message, title: str) -> Faculty | None:
+    db_session = msg.bot.get('db')
+
+    async with db_session() as session:
+        sql = select(Faculty).where(Faculty.title == title)
+        result = await session.execute(sql)
+        faculty_instance: Faculty | None = result.scalars.first()
+        return faculty_instance
+
+
+async def change_title_for_faculty(msg: types.Message, *, faculty_id: int, title: str, title_short: str) -> None:
+    db_session = msg.bot.get('db')
+
+    async with db_session() as session:
+        sql = update(Faculty).where(Faculty.id == faculty_id).values(title=title, title_short=title_short)
+        await session.execute(sql)
+        await session.commit()
+
+
+async def delete_faculty(msg: types.Message | types.CallbackQuery, faculty_id: int) -> None:
+    db_session = msg.bot.get('db')
+
+    async with db_session() as session:
+        sql_select_departments = select(Department).where(Department.faculty_id == faculty_id)
+        result = await session.execute(sql_select_departments)
+        departments = result.scalars.all()
+
+    for department in departments:
+        await delete_department(msg, department_id=department.id)
+
+    async with db_session() as session:
+        sql = delete(Faculty).where(Faculty.id == faculty_id)
+        await session.execute(sql)
+        await session.commit()
+
+
 async def create_department(msg: types.Message, faculty_id: int, title: str, title_short: str) -> Department:
     db_session = msg.bot.get('db')
 
@@ -79,6 +115,52 @@ async def create_department(msg: types.Message, faculty_id: int, title: str, tit
         )
 
     return department_instance
+
+
+async def get_department_instance_by_title(msg: types.Message, title: str) -> Department | None:
+    db_session = msg.bot.get('db')
+
+    async with db_session() as session:
+        sql = select(Department, Faculty).where(Department.title == title, Department.faculty_id == Faculty.id)
+        result = await session.execute(sql)
+        department_instance: Department | None = result.scalars.first()
+        return department_instance
+
+
+async def change_faculty_for_department(msg: types.Message, *, department_id: int, faculty_id: int) -> None:
+    db_session = msg.bot.get('db')
+
+    async with db_session() as session:
+        sql = update(Department).where(Department.id == department_id).values(faculty_id=faculty_id)
+        await session.execute(sql)
+        await session.commit()
+
+
+async def change_title_for_department(msg: types.Message, *, department_id: int, title: str,
+                                      title_short: str) -> None:
+    db_session = msg.bot.get('db')
+
+    async with db_session() as session:
+        sql = update(Department).where(Department.id == department_id).values(title=title, title_short=title_short)
+        await session.execute(sql)
+        await session.commit()
+
+
+async def delete_department(msg: types.Message | types.CallbackQuery, *, department_id: int) -> None:
+    db_session = msg.bot.get('db')
+
+    async with db_session() as session:
+        sql_select_group = select(Group).where(Group.department_id == department_id)
+        result = await session.execute(sql_select_group)
+        groups = result.scalars().all()
+
+    for group in groups:
+        await delete_group(msg, group_id=group.id, department_id=department_id)
+
+    async with db_session() as session:
+        sql_delete_department = delete(Department).where(Department.id == department_id)
+        await session.execute(sql_delete_department)
+        await session.commit()
 
 
 async def create_group(msg: types.Message, department_id: int, title: str, url_schedule: str) -> Group:
@@ -116,7 +198,7 @@ async def is_group_exist_by_title_and_department_id(msg: types.Message, title: s
         return (is_exist := (group_instance is not None)), group_instance if is_exist else None
 
 
-async def get_information_group(msg: types.Message, *, group_id, department_id) -> Group:
+async def get_group_instance_by_id(msg: types.Message, *, group_id, department_id) -> Group:
     db_session = msg.bot.get('db')
 
     async with db_session() as session:
@@ -155,12 +237,12 @@ async def change_title_group(msg: types.Message, new_title: str, *, group_id: in
         await session.commit()
 
 
-async def change_department_group(msg: types.Message, new_department_id: str, *, group_id: int,
-                                  department_id: int) -> None:
+async def change_department_for_group(msg: types.Message, new_department_id: str, *, group_id: int,
+                                      department_id: int) -> None:
     db_session = msg.bot.get('db')
 
     async with db_session() as session:
-        sql = update(Group).where(Group.id == group_id, Group.department_id == department_id).\
+        sql = update(Group).where(Group.id == group_id, Group.department_id == department_id). \
             values(department_id=new_department_id)
         await session.execute(sql)
         await session.commit()
