@@ -278,11 +278,3 @@ async def register_user(msg: types.Message | types.CallbackQuery, group_id: int)
             return False
         else:
             return True
-
-
-async def just_def(msg: types.Message) -> None:
-    db_session = msg.bot.get('db')
-
-    async with db_session() as session:
-        s = select(User).where(User.id == 1)
-        print(type(s), type(select), type(session))

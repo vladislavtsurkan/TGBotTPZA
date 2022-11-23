@@ -19,7 +19,7 @@ class FSMEditFaculty(StatesGroup):
 async def start_edit_faculty(msg: types.Message) -> None:
     if await is_user_admin(msg):
         await FSMEditFaculty.title.set()
-        await msg.answer('Введіть назву кафедри.')
+        await msg.answer('Введіть назву факультета.')
 
 
 async def input_title_for_edit_faculty(msg: types.Message, state: FSMContext) -> None:
@@ -45,11 +45,11 @@ async def faculty_edit_callback(callback: types.CallbackQuery, state: FSMContext
     async with state.proxy() as data:
         match data_inline_keyboard:
             case 'faculty', 'change_title':
-                await callback.message.edit_text('Введіть нову назву для кафедри.', reply_markup=None)
+                await callback.message.edit_text('Введіть нову назву для факультета.', reply_markup=None)
                 await FSMEditFaculty.input_edit_title.set()
             case 'faculty', 'delete_faculty':
                 await callback.message.edit_text(
-                    'Кафедру разом зі зв\'язаними групами було видалено!', reply_markup=None
+                    'Факультет разом зі зв\'язаними кафедрами та групами було видалено!', reply_markup=None
                 )
                 await delete_faculty(callback, faculty_id=data['faculty_id'])
                 await state.finish()
@@ -60,14 +60,14 @@ async def faculty_edit_callback(callback: types.CallbackQuery, state: FSMContext
 async def input_new_title_for_edit_faculty(msg: types.Message, state: FSMContext) -> None:
     async with state.proxy() as data:
         data['new_title'] = msg.text
-        await msg.answer(f'Тепер введіть нову абревіатуру для кафедри.')
+        await msg.answer(f'Тепер введіть нову абревіатуру для факультета.')
         await FSMEditFaculty.input_edit_title_short.set()
 
 
 async def input_new_title_short_for_edit_faculty(msg: types.Message, state: FSMContext) -> None:
     async with state.proxy() as data:
         data['new_title_short'] = msg.text
-        await msg.answer(f'Назва кафедри була змінена на: {data["new_title"]} ({data["new_title_short"]})')
+        await msg.answer(f'Назва факультету була змінена на: {data["new_title"]} ({data["new_title_short"]})')
         await change_title_for_faculty(
             msg, faculty_id=data['faculty_id'], title=data['new_title'], title_short=data['new_title_short']
         )
