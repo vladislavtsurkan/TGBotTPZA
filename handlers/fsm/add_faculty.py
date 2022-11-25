@@ -22,7 +22,7 @@ async def input_faculty_title(msg: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['title'] = msg.text
 
-        is_exist, department_id = await is_model_exist_by_name(msg, msg.text, class_model=Faculty)
+        is_exist, department_id = await is_model_exist_by_name(msg.bot.get('db'), msg.text, class_model=Faculty)
         if is_exist:
             await msg.answer('Факультет з такою назвою вже існує.')
             await state.finish()
@@ -36,7 +36,7 @@ async def input_faculty_title_short(msg: types.Message, state: FSMContext):
         data['title_short'] = msg.text
 
         if len(msg.text) > 2:
-            await create_faculty(msg, data['title'], data['title_short'].upper())
+            await create_faculty(msg.bot.get('db'), data['title'], data['title_short'].upper())
             await msg.answer(f"Новий факультет було додано в базу даних: {data['title']} ({data['title_short']})")
             await state.finish()
 

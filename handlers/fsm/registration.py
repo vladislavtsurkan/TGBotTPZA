@@ -17,14 +17,14 @@ async def input_name_group(msg: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['group'] = msg.text
 
-        groups: list[Group] = await get_groups_by_title(msg, data['group'])
+        groups: list[Group] = await get_groups_by_title(msg.bot.get('db'), data['group'])
         match len(groups):
             case 0:
                 await msg.answer('Даної групи не було знайдено в базі даних. '
                                  'Перевірте відправлений текст на помилки та спробуйте ще раз.')
             case 1:
                 group: Group = groups[0]
-                if await register_user(msg, group.id):
+                if await register_user(msg.bot.get('db'), group.id, user_id=msg.from_user.id):
                     await msg.answer('Ви були успішно зареєстровані!')
                     await state.finish()
                 else:
@@ -40,7 +40,7 @@ async def group_select_callback(callback: types.CallbackQuery, state: FSMContext
     data_inline_keyboard = callback.data.split()
     group_id = int(data_inline_keyboard[2])
 
-    if await register_user(callback, group_id):
+    if await register_user(callback.bot.get('db'), group_id, user_id=callback.from_user.id):
         await callback.message.edit_text('Ви були успішно зареєстровані!', reply_markup=None)
     else:
         await callback.message.edit_text('На жаль, сталась помилка при реєстрації.', reply_markup=None)
@@ -50,5 +50,6 @@ async def group_select_callback(callback: types.CallbackQuery, state: FSMContext
 
 def register_handlers_fsm_registration(dp: Dispatcher):
     dp.register_message_handler(input_name_group, state=FSMRegistration.group)
-    dp.register_callback_query_handler(group_select_callback, Text(startswith='group select'),
-                                       state=FSMRegistration.department)
+    dp.register_callback_query_handler(
+        group_select_callback, Text(startswith='group select'), state=FSMRegistration.department
+    )

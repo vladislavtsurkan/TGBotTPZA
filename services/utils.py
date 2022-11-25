@@ -1,6 +1,7 @@
 from typing import Any
 from aiogram import types
 from sqlalchemy import select
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql.selectable import Select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -57,10 +58,8 @@ async def is_registered_user(msg: types.Message) -> bool:
             return False
 
 
-async def is_model_exist_by_name(msg: types.Message, title: str, *,
+async def is_model_exist_by_name(db_session: sessionmaker, title: str, *,
                                  class_model: type(Group) | type(Department) | type(Faculty)) -> (bool, int):
-    db_session = msg.bot.get('db')
-
     async with db_session() as session:
         sql = select(class_model).where(class_model.title == title)
         result = await session.execute(sql)

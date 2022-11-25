@@ -26,7 +26,7 @@ async def input_title_for_edit_faculty(msg: types.Message, state: FSMContext) ->
     async with state.proxy() as data:
         data['title'] = msg.text
 
-        faculty_instance: Faculty = await get_faculty_instance_by_title(msg, msg.text)
+        faculty_instance: Faculty = await get_faculty_instance_by_title(msg.bot.get('db'), msg.text)
         if faculty_instance:
             await msg.answer(
                 f'<b>Інформація про факультет</b>\n'
@@ -51,7 +51,7 @@ async def faculty_edit_callback(callback: types.CallbackQuery, state: FSMContext
                 await callback.message.edit_text(
                     'Факультет разом зі зв\'язаними кафедрами та групами було видалено!', reply_markup=None
                 )
-                await delete_faculty(callback, faculty_id=data['faculty_id'])
+                await delete_faculty(callback.bot.get('db'), faculty_id=data['faculty_id'])
                 await state.finish()
 
     await callback.answer()
@@ -69,7 +69,8 @@ async def input_new_title_short_for_edit_faculty(msg: types.Message, state: FSMC
         data['new_title_short'] = msg.text
         await msg.answer(f'Назва факультету була змінена на: {data["new_title"]} ({data["new_title_short"]})')
         await change_title_for_faculty(
-            msg, faculty_id=data['faculty_id'], title=data['new_title'], title_short=data['new_title_short']
+            msg.bot.get('db'), faculty_id=data['faculty_id'], title=data['new_title'],
+            title_short=data['new_title_short']
         )
         await state.finish()
 

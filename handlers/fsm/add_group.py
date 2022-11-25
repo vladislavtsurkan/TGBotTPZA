@@ -28,7 +28,7 @@ async def input_department_for_add_group(msg: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['department_name'] = msg.text
 
-        is_exist, department_id = await is_model_exist_by_name(msg, msg.text, class_model=Department)
+        is_exist, department_id = await is_model_exist_by_name(msg.bot.get('db'), msg.text, class_model=Department)
         if is_exist:
             await msg.answer('Кафедра з такою назвою існує. Тепер введіть назву групи.')
             data['department_id'] = department_id
@@ -42,7 +42,7 @@ async def input_title_for_add_group(msg: types.Message, state: FSMContext):
         data['title'] = msg.text
 
         is_exist, group_instance = await is_group_exist_by_title_and_department_id(
-            msg, data['title'], data['department_id']
+            msg.bot.get('db'), data['title'], data['department_id']
         )
         if is_exist:
             await msg.answer('Помилка. Група з такою назвою на вказаній кафедрі вже існує.')
@@ -56,14 +56,17 @@ async def input_url_schedule_for_add_group(msg: types.Message, state: FSMContext
         data['url_schedule'] = msg.text
 
         if data.get('url_schedule', '').startswith('http://epi.kpi.ua'):
-            created_group: Group = await create_group(msg, data.get('department_id'), data.get('title'),
-                                                      data.get('url_schedule'))
-            result = await add_information_from_schedule_to_db(msg, created_group)
+            created_group: Group = await create_group(
+                msg.bot.get('db'), data.get('department_id'), data.get('title'), data.get('url_schedule')
+            )
+            result = await add_information_from_schedule_to_db(msg.bot.get('db'), created_group)
             if result:
                 await msg.answer('Група була створена і розклад скопійовано з сайту.')
             else:
                 await msg.answer('Збір даних з сайту не вдався через проблеми в його роботі.')
-                await delete_group(msg, group_id=created_group.id, department_id=created_group.department_id)
+                await delete_group(
+                    msg.bot.get('db'), group_id=created_group.id, department_id=created_group.department_id
+                )
             await state.finish()
         else:
             await msg.answer('Посилання не є валідним чи направлено на сторонній сайт.')
