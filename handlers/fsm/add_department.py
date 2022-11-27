@@ -23,7 +23,9 @@ async def input_faculty_for_add_department(msg: types.Message, state: FSMContext
     async with state.proxy() as data:
         data['faculty_name'] = msg.text
 
-        is_exist, faculty_id = await is_model_exist_by_name(msg.bot.get('db'), msg.text, class_model=Faculty)
+        is_exist, faculty_id = await is_model_exist_by_name(
+            msg.bot.get('db'), msg.text, class_model=Faculty
+        )
         if is_exist:
             await msg.answer('Факультет з такою назвою існує. Тепер введіть назву кафедри.')
             data['faculty_id'] = faculty_id
@@ -36,7 +38,9 @@ async def input_title_for_add_department(msg: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['title'] = msg.text
 
-        is_exist, department_id = await is_model_exist_by_name(msg.bot.get('db'), msg.text, class_model=Department)
+        is_exist, department_id = await is_model_exist_by_name(
+            msg.bot.get('db'), msg.text, class_model=Department
+        )
         if is_exist:
             await msg.answer('Помилка. Кафедра з такою назвою вже існує.')
         else:
@@ -49,8 +53,12 @@ async def input_title_short_for_add_department(msg: types.Message, state: FSMCon
         data['title_short'] = msg.text
 
         if len(msg.text) > 2:
-            await create_department(msg.bot.get('db'), data['faculty_id'], data['title'], data['title_short'].upper())
-            await msg.answer(f"Нову кафедру було додано в базу даних: {data['title']} ({data['title_short']})")
+            await create_department(
+                msg.bot.get('db'), data['faculty_id'], data['title'], data['title_short'].upper()
+            )
+            await msg.answer(
+                f"Нову кафедру було додано в базу даних: {data['title']} ({data['title_short']})"
+            )
             await state.finish()
 
 
@@ -58,4 +66,6 @@ def register_handlers_fsm_add_department(dp: Dispatcher):
     dp.register_message_handler(start_add_new_department, commands=['add_department'], state=None)
     dp.register_message_handler(input_faculty_for_add_department, state=FSMAddDepartment.faculty)
     dp.register_message_handler(input_title_for_add_department, state=FSMAddDepartment.title)
-    dp.register_message_handler(input_title_short_for_add_department, state=FSMAddDepartment.title_short)
+    dp.register_message_handler(
+        input_title_short_for_add_department, state=FSMAddDepartment.title_short
+    )

@@ -20,8 +20,10 @@ async def input_name_group(msg: types.Message, state: FSMContext):
         groups: list[Group] = await get_groups_by_title(msg.bot.get('db'), data['group'])
         match len(groups):
             case 0:
-                await msg.answer('Даної групи не було знайдено в базі даних. '
-                                 'Перевірте відправлений текст на помилки та спробуйте ще раз.')
+                await msg.answer(
+                    'Даної групи не було знайдено в базі даних. '
+                    'Перевірте відправлений текст на помилки та спробуйте ще раз.'
+                )
             case 1:
                 group: Group = groups[0]
                 if await register_user(msg.bot.get('db'), group.id, user_id=msg.from_user.id):
@@ -43,7 +45,9 @@ async def group_select_callback(callback: types.CallbackQuery, state: FSMContext
     if await register_user(callback.bot.get('db'), group_id, user_id=callback.from_user.id):
         await callback.message.edit_text('Ви були успішно зареєстровані!', reply_markup=None)
     else:
-        await callback.message.edit_text('На жаль, сталась помилка при реєстрації.', reply_markup=None)
+        await callback.message.edit_text(
+            'На жаль, сталась помилка при реєстрації.', reply_markup=None
+        )
     await state.finish()
     await callback.answer()
 

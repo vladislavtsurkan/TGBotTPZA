@@ -45,11 +45,14 @@ async def faculty_edit_callback(callback: types.CallbackQuery, state: FSMContext
     async with state.proxy() as data:
         match data_inline_keyboard:
             case 'faculty', 'change_title':
-                await callback.message.edit_text('Введіть нову назву для факультета.', reply_markup=None)
+                await callback.message.edit_text(
+                    'Введіть нову назву для факультета.', reply_markup=None
+                )
                 await FSMEditFaculty.input_edit_title.set()
             case 'faculty', 'delete_faculty':
                 await callback.message.edit_text(
-                    'Факультет разом зі зв\'язаними кафедрами та групами було видалено!', reply_markup=None
+                    'Факультет разом зі зв\'язаними кафедрами та групами було видалено!',
+                    reply_markup=None
                 )
                 await delete_faculty(callback.bot.get('db'), faculty_id=data['faculty_id'])
                 await state.finish()
@@ -67,7 +70,9 @@ async def input_new_title_for_edit_faculty(msg: types.Message, state: FSMContext
 async def input_new_title_short_for_edit_faculty(msg: types.Message, state: FSMContext) -> None:
     async with state.proxy() as data:
         data['new_title_short'] = msg.text
-        await msg.answer(f'Назва факультету була змінена на: {data["new_title"]} ({data["new_title_short"]})')
+        await msg.answer(
+            f'Назва факультету була змінена на: {data["new_title"]} ({data["new_title_short"]})'
+        )
         await change_title_for_faculty(
             msg.bot.get('db'), faculty_id=data['faculty_id'], title=data['new_title'],
             title_short=data['new_title_short']
@@ -78,9 +83,13 @@ async def input_new_title_short_for_edit_faculty(msg: types.Message, state: FSMC
 def register_handlers_fsm_edit_faculty(dp: Dispatcher):
     dp.register_message_handler(start_edit_faculty, commands=['edit_faculty'], state=None)
     dp.register_message_handler(input_title_for_edit_faculty, state=FSMEditFaculty.title)
-    dp.register_callback_query_handler(faculty_edit_callback, Text(startswith='faculty'),
-                                       state=FSMEditFaculty.select_edit_faculty)
-    dp.register_message_handler(input_new_title_for_edit_faculty, state=FSMEditFaculty.input_edit_title)
+    dp.register_callback_query_handler(
+        faculty_edit_callback, Text(startswith='faculty'),
+        state=FSMEditFaculty.select_edit_faculty
+    )
+    dp.register_message_handler(
+        input_new_title_for_edit_faculty, state=FSMEditFaculty.input_edit_title
+    )
     dp.register_message_handler(
         input_new_title_short_for_edit_faculty, state=FSMEditFaculty.input_edit_title_short
     )

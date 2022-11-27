@@ -49,7 +49,9 @@ class Group(Base):
     title = Column(String(10))
     schedule_url = Column(String(200))
     department_id = Column(Integer, ForeignKey('bot_departments.id'))
-    __table_args__ = (UniqueConstraint('department_id', 'title', name='_department_id_title_str_uc'), )
+    __table_args__ = (
+        UniqueConstraint('department_id', 'title', name='_department_id_title_str_uc'),
+    )
 
     Department = relationship('Department')
 

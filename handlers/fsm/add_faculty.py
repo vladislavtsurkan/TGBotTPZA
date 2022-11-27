@@ -22,7 +22,7 @@ async def input_faculty_title(msg: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['title'] = msg.text
 
-        is_exist, department_id = await is_model_exist_by_name(msg.bot.get('db'), msg.text, class_model=Faculty)
+        is_exist, _ = await is_model_exist_by_name(msg.bot.get('db'), msg.text, class_model=Faculty)
         if is_exist:
             await msg.answer('Факультет з такою назвою вже існує.')
             await state.finish()

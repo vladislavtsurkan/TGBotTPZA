@@ -22,9 +22,17 @@ async def cancel_handler(msg: types.Message, state: FSMContext):
 
 def register_all_fsm_handlers(dp: Dispatcher):
     logger.debug('Start registration handlers for FSM')
-    dp.register_message_handler(cancel_handler, state='*', commands=['відміна', 'stop', 'cancel'])
+    dp.register_message_handler(
+        cancel_handler, state='*',
+        commands=[
+            'відміна', 'stop', 'cancel'
+        ]
+    )
     dp.register_message_handler(cancel_handler, Text(
-        equals=['відміна', 'cancel', 'stop', 'стоп', '-', 'отмена', 'выйти', 'вийти'], ignore_case=True
+        equals=[
+            'відміна', 'cancel', 'stop', 'стоп', '-', 'отмена', 'выйти', 'вийти'
+        ],
+        ignore_case=True
     ), state='*')
 
     # admin

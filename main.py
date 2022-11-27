@@ -20,7 +20,7 @@ if not logs_folder.exists():
 logger.add('logs/bot.log', rotation='10 MB', compression='zip', enqueue=True, level="WARNING")
 
 
-async def on_startup(dp):
+async def on_startup(dp: Dispatcher):
     logger.debug("The bot launch process has been started.")
     await other.set_default_commands(dp)
     register_all_fsm_handlers(dp)
@@ -49,7 +49,9 @@ async def main():
     bot['ids_skip_check_registered'] = set()
 
     config_mongo: MongoDBConfig = load_config_mongo_db()
-    storage = MongoStorage(host=config_mongo.host, port=config_mongo.port, db_name=config_mongo.db_name)
+    storage = MongoStorage(
+        host=config_mongo.host, port=config_mongo.port, db_name=config_mongo.db_name
+    )
     dp = Dispatcher(bot, storage=storage)
 
     await on_startup(dp)

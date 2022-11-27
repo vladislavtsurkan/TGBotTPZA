@@ -23,7 +23,9 @@ async def is_user_admin(msg: types.Message) -> bool:
             return False
 
 
-async def get_or_create(session: AsyncSession, class_model: Any, sql: Select, **kwargs) -> (Any, bool):
+async def get_or_create(
+        session: AsyncSession, class_model: Any, sql: Select, **kwargs
+) -> (Any, bool):
     result = await session.execute(sql)
     instance = result.scalars().first()
     if instance is not None:
@@ -58,8 +60,10 @@ async def is_registered_user(msg: types.Message) -> bool:
             return False
 
 
-async def is_model_exist_by_name(db_session: sessionmaker, title: str, *,
-                                 class_model: type(Group) | type(Department) | type(Faculty)) -> (bool, int):
+async def is_model_exist_by_name(
+        db_session: sessionmaker, title: str, *,
+        class_model: type(Group) | type(Department) | type(Faculty)
+) -> (bool, int):
     async with db_session() as session:
         sql = select(class_model).where(class_model.title == title)
         result = await session.execute(sql)
