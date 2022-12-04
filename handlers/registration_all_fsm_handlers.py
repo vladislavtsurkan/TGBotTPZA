@@ -21,7 +21,7 @@ async def cancel_handler(msg: types.Message, state: FSMContext):
 
 
 def register_all_fsm_handlers(dp: Dispatcher):
-    logger.debug('Start registration handlers for FSM')
+    logger.debug('Start registration handlers for FSMs')
     dp.register_message_handler(
         cancel_handler, state='*',
         commands=[
@@ -45,4 +45,4 @@ def register_all_fsm_handlers(dp: Dispatcher):
 
     # other
     register_handlers_fsm_registration(dp)
-    logger.debug('Stop registration handlers for FSM')
+    logger.debug('Stop registration handlers for FSMs')

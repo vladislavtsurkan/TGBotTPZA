@@ -20,7 +20,7 @@ async def add_information_from_schedule_to_db(
             group_instance.schedule_url
         )
     except ClientConnectorError:
-        logger.error('Failed try get schedule from site')
+        logger.warning('Failed try get schedule from site')
         return False
 
     async with db_session() as session:
@@ -72,6 +72,7 @@ async def add_information_from_schedule_to_db(
 
 
 async def create_faculty(db_session: sessionmaker, title: str, title_short: str) -> Faculty:
+    """Create faculty instance in database"""
     async with db_session() as session:
         sql = select(Faculty).where(Faculty.title == title)
         faculty_instance, _ = await get_or_create(
@@ -82,16 +83,18 @@ async def create_faculty(db_session: sessionmaker, title: str, title_short: str)
 
 
 async def get_faculty_instance_by_title(db_session: sessionmaker, title: str) -> Faculty | None:
+    """Get faculty instance by title"""
     async with db_session() as session:
         sql = select(Faculty).where(Faculty.title == title)
         result = await session.execute(sql)
-        faculty_instance: Faculty | None = result.scalars.first()
+        faculty_instance: Faculty | None = result.scalars().first()
         return faculty_instance
 
 
 async def change_title_for_faculty(
         db_session: sessionmaker, *, faculty_id: int, title: str, title_short: str
 ) -> None:
+    """Change title for faculty in database by faculty_id"""
     async with db_session() as session:
         sql = update(Faculty).where(
             Faculty.id == faculty_id
@@ -103,12 +106,13 @@ async def change_title_for_faculty(
 
 
 async def delete_faculty(db_session: sessionmaker, faculty_id: int) -> None:
+    """Delete faculty instance in database by faculty_id with cascade"""
     async with db_session() as session:
         sql_select_departments = select(Department).where(
             Department.faculty_id == faculty_id
         )
         result = await session.execute(sql_select_departments)
-        departments = result.scalars.all()
+        departments = result.scalars().all()
 
     for department in departments:
         await delete_department(db_session, department_id=department.id)
@@ -122,6 +126,7 @@ async def delete_faculty(db_session: sessionmaker, faculty_id: int) -> None:
 async def create_department(
         db_session: sessionmaker, faculty_id: int, title: str, title_short: str
 ) -> Department:
+    """Create department instance in database"""
     async with db_session() as session:
         sql = select(Department).where(Department.title == title)
         department_instance, _ = await get_or_create(
@@ -134,18 +139,20 @@ async def create_department(
 async def get_department_instance_by_title(
         db_session: sessionmaker, title: str
 ) -> Department | None:
+    """Get department instance by title"""
     async with db_session() as session:
         sql = select(Department, Faculty).where(
             Department.title == title, Department.faculty_id == Faculty.id
         )
         result = await session.execute(sql)
-        department_instance: Department | None = result.scalars.first()
+        department_instance: Department | None = result.scalars().first()
         return department_instance
 
 
 async def change_faculty_for_department(
         db_session: sessionmaker, *, department_id: int, faculty_id: int
 ) -> None:
+    """Change faculty for department in database by department_id"""
     async with db_session() as session:
         sql = update(Department).where(
             Department.id == department_id
@@ -159,6 +166,7 @@ async def change_faculty_for_department(
 async def change_title_for_department(
         db_session: sessionmaker, *, department_id: int, title: str, title_short: str
 ) -> None:
+    """Change title for department in database by department_id"""
     async with db_session() as session:
         sql = update(Department).where(
             Department.id == department_id
@@ -170,6 +178,7 @@ async def change_title_for_department(
 
 
 async def delete_department(db_session: sessionmaker, *, department_id: int) -> None:
+    """Delete department instance in database by department_id with cascade"""
     async with db_session() as session:
         sql_select_group = select(Group).where(Group.department_id == department_id)
         result = await session.execute(sql_select_group)
@@ -187,6 +196,7 @@ async def delete_department(db_session: sessionmaker, *, department_id: int) -> 
 async def create_group(
         db_session: sessionmaker, department_id: int, title: str, url_schedule: str
 ) -> Group:
+    """Create group instance in database"""
     async with db_session() as session:
         sql = select(Group).where(Group.department_id == department_id, Group.title == title)
         group_instance, _ = await get_or_create(
@@ -197,7 +207,8 @@ async def create_group(
     return group_instance
 
 
-async def get_groups_by_title(db_session: sessionmaker, title: str) -> list[Group]:
+async def get_groups_instances_by_title(db_session: sessionmaker, title: str) -> list[Group]:
+    """Get groups instances by title"""
     async with db_session() as session:
         sql_groups = select(Group, Department, Faculty).where(
             Group.department_id == Department.id,
@@ -211,6 +222,7 @@ async def get_groups_by_title(db_session: sessionmaker, title: str) -> list[Grou
 async def is_group_exist_by_title_and_department_id(
         db_session: sessionmaker, title: str, department_id: int
 ) -> (bool, Group | None):
+    """Check group exist in database by title and department_id"""
     async with db_session() as session:
         sql = select(Group).where(Group.title == title, Group.department_id == department_id)
         result = await session.execute(sql)
@@ -218,7 +230,10 @@ async def is_group_exist_by_title_and_department_id(
         return (is_exist := (group_instance is not None)), group_instance if is_exist else None
 
 
-async def get_group_instance_by_id(db_session: sessionmaker, *, group_id, department_id) -> Group:
+async def get_group_instance_by_id(
+        db_session: sessionmaker, *, group_id, department_id
+) -> Group | None:
+    """Get group instance by id"""
     async with db_session() as session:
         sql_group_info = select(Group, Department, Faculty).where(
             Group.department_id == Department.id,
@@ -233,6 +248,7 @@ async def get_group_instance_by_id(db_session: sessionmaker, *, group_id, depart
 
 
 async def delete_group(db_session: sessionmaker, *, group_id: int, department_id: int) -> None:
+    """Delete group instance in database by group_id"""
     async with db_session() as session:
         sql_group_table = delete(Group).where(
             Group.department_id == department_id, Group.id == group_id
@@ -246,9 +262,10 @@ async def delete_group(db_session: sessionmaker, *, group_id: int, department_id
         await session.commit()
 
 
-async def change_title_group(
+async def change_title_for_group(
         db_session: sessionmaker, new_title: str, *, group_id: int, department_id: int
 ) -> None:
+    """Change title for group in database by group_id and department_id"""
     async with db_session() as session:
         sql = update(Group).where(
             Group.id == group_id, Group.department_id == department_id
@@ -260,16 +277,19 @@ async def change_title_group(
 
 
 async def change_department_for_group(
-        db_session: sessionmaker, new_department_id: str, *, group_id: int, department_id: int
+        db_session: sessionmaker, new_department_id: int, *, group_id: int, department_id: int
 ) -> None:
+    """Change department for group in database by group_id"""
     async with db_session() as session:
-        sql = update(Group).where(Group.id == group_id, Group.department_id == department_id). \
-            values(department_id=new_department_id)
+        sql = update(Group).where(
+            Group.id == group_id, Group.department_id == department_id
+        ).values(department_id=new_department_id)
         await session.execute(sql)
         await session.commit()
 
 
-async def change_url_schedule_group(db_session: sessionmaker, new_url: str, *, group_id) -> bool:
+async def change_url_schedule_for_group(db_session: sessionmaker, new_url: str, *, group_id) -> bool:
+    """Change url schedule for group in database by group_id"""
     async with db_session() as session:
         sql_update_url = update(Group).where(Group.id == group_id).values(schedule_url=new_url)
         sql_group_lesson_table = f'DELETE FROM lesson_group WHERE group_id = {group_id}'
@@ -284,6 +304,7 @@ async def change_url_schedule_group(db_session: sessionmaker, new_url: str, *, g
 
 
 async def register_user(db_session: sessionmaker, group_id: int, *, user_id: int) -> bool:
+    """Register user in database"""
     async with db_session() as session:
         try:
             await session.merge(
@@ -291,7 +312,7 @@ async def register_user(db_session: sessionmaker, group_id: int, *, user_id: int
             )
             await session.commit()
         except SQLAlchemyError:
-            logger.error('Failed try save new User in database')
+            logger.exception('Failed try save new User in database')
             return False
         else:
             return True

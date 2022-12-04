@@ -4,7 +4,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.dispatcher.filters import Text
 
 from services.admin import (
-    get_group_instance_by_id, change_title_group, delete_group, change_url_schedule_group,
+    get_group_instance_by_id, change_title_for_group, delete_group, change_url_schedule_for_group,
     change_department_for_group
 )
 from services.utils import is_user_admin, is_model_exist_by_name
@@ -106,7 +106,7 @@ async def input_new_url_schedule_for_edit_group(msg: types.Message, state: FSMCo
         data['schedule_url'] = msg.text
 
         if data.get('schedule_url', '').startswith('http://epi.kpi.ua'):
-            await change_url_schedule_group(
+            await change_url_schedule_for_group(
                 msg.bot.get('db'), data['schedule_url'], group_id=data['group_id']
             )
             await msg.answer('Посилання було змінено і розклад скопійовано з сайту.')
@@ -118,7 +118,7 @@ async def input_new_url_schedule_for_edit_group(msg: types.Message, state: FSMCo
 async def input_new_title_for_edit_group(msg: types.Message, state: FSMContext) -> None:
     async with state.proxy() as data:
         data['new_title'] = msg.text
-        await change_title_group(
+        await change_title_for_group(
             msg.bot.get('db'), data['new_title'], group_id=data['group_id'],
             department_id=data['department_id']
         )

@@ -9,6 +9,7 @@ Base = declarative_base()
 
 
 def get_sqlalchemy_url() -> sqlalchemy_url:
+    """Get SQLAlchemy URL for work with database from config"""
     config_db: DatabaseConfig = load_config_db()
     return (
         f'mysql+asyncmy://{config_db.user}:{config_db.password}@'

@@ -9,6 +9,7 @@ from database.models import User, Group, Department, Faculty
 
 
 async def is_user_admin(msg: types.Message) -> bool:
+    """Check if user is admin"""
     db_session = msg.bot.get('db')
 
     async with db_session() as session:
@@ -26,6 +27,7 @@ async def is_user_admin(msg: types.Message) -> bool:
 async def get_or_create(
         session: AsyncSession, class_model: Any, sql: Select, **kwargs
 ) -> (Any, bool):
+    """Get or create model by class_model and sql for search instance"""
     result = await session.execute(sql)
     instance = result.scalars().first()
     if instance is not None:
@@ -40,6 +42,7 @@ async def get_or_create(
 
 
 async def is_registered_user(msg: types.Message) -> bool:
+    """Check if user is registered in database"""
     ids_skip: set[int] = msg.bot.get('ids_skip_check_registered')
 
     if (id_user := msg.from_user.id) in ids_skip:
@@ -64,6 +67,7 @@ async def is_model_exist_by_name(
         db_session: sessionmaker, title: str, *,
         class_model: type(Group) | type(Department) | type(Faculty)
 ) -> (bool, int):
+    """Check if model exist by title (work with Group, Department, Faculty)"""
     async with db_session() as session:
         sql = select(class_model).where(class_model.title == title)
         result = await session.execute(sql)
