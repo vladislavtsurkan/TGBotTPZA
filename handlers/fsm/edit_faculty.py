@@ -4,7 +4,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.dispatcher.filters import Text
 
 from services.admin import get_faculty_instance_by_title, change_title_for_faculty, delete_faculty
-from services.utils import is_user_admin
+from services.utils import check_if_user_is_admin
 from keyboards.kb_edit_faculty import get_keyboard_edit_faculty
 from database.models import Faculty
 
@@ -16,10 +16,10 @@ class FSMEditFaculty(StatesGroup):
     input_edit_title_short = State()
 
 
+@check_if_user_is_admin
 async def start_edit_faculty(msg: types.Message) -> None:
-    if await is_user_admin(msg):
-        await FSMEditFaculty.title.set()
-        await msg.answer('Введіть назву факультета.')
+    await FSMEditFaculty.title.set()
+    await msg.answer('Введіть назву факультета.')
 
 
 async def input_title_for_edit_faculty(msg: types.Message, state: FSMContext) -> None:

@@ -3,7 +3,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 
 from services.admin import create_faculty
-from services.utils import is_user_admin, is_model_exist_by_name
+from services.utils import is_model_exist_by_name, check_if_user_is_admin
 from database.models import Faculty
 
 
@@ -12,10 +12,10 @@ class FSMAddFaculty(StatesGroup):
     title_short = State()
 
 
+@check_if_user_is_admin
 async def start_add_new_faculty(msg: types.Message):
-    if await is_user_admin(msg):
-        await FSMAddFaculty.title.set()
-        await msg.answer('Введіть назву факультету.')
+    await FSMAddFaculty.title.set()
+    await msg.answer('Введіть назву факультету.')
 
 
 async def input_faculty_title(msg: types.Message, state: FSMContext):

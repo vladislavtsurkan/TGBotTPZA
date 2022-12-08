@@ -112,3 +112,23 @@ def get_day_of_week_by_number(day_number: int) -> str:
         6: 'Субота',
         7: 'Неділя'
     }[day_number]
+
+
+def check_if_user_is_registered(func):
+    """Check if user is registered in database (decorator)"""
+    async def wrapper(msg: types.Message):
+        if await is_registered_user(msg):
+            await func(msg)
+        else:
+            await msg.answer('Ви не зареєстровані в системі.')
+
+    return wrapper
+
+
+def check_if_user_is_admin(func):
+    """Check if user is admin (decorator)"""
+    async def wrapper(msg: types.Message):
+        if await is_user_admin(msg):
+            await func(msg)
+
+    return wrapper

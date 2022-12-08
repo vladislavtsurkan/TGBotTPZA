@@ -7,7 +7,7 @@ from services.admin import (
     get_department_instance_by_title, change_faculty_for_department, delete_department,
     change_title_for_department
 )
-from services.utils import is_user_admin, is_model_exist_by_name
+from services.utils import check_if_user_is_admin, is_model_exist_by_name
 from keyboards.kb_edit_department import get_keyboard_edit_department
 from database.models import Department, Faculty
 
@@ -20,10 +20,10 @@ class FSMEditDepartment(StatesGroup):
     input_edit_faculty = State()
 
 
+@check_if_user_is_admin
 async def start_edit_department(msg: types.Message) -> None:
-    if await is_user_admin(msg):
-        await FSMEditDepartment.title.set()
-        await msg.answer('Введіть назву кафедри.')
+    await FSMEditDepartment.title.set()
+    await msg.answer('Введіть назву кафедри.')
 
 
 async def input_title_for_edit_department(msg: types.Message, state: FSMContext) -> None:

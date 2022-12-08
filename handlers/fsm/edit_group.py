@@ -4,10 +4,13 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.dispatcher.filters import Text
 
 from services.admin import (
-    get_group_instance_by_id, change_title_for_group, delete_group, change_url_schedule_for_group,
+    get_group_instance_by_id,
+    change_title_for_group,
+    delete_group,
+    change_url_schedule_for_group,
     change_department_for_group
 )
-from services.utils import is_user_admin, is_model_exist_by_name
+from services.utils import check_if_user_is_admin, is_model_exist_by_name
 from keyboards.kb_edit_group import get_keyboard_edit_group
 from database.models import Department, Group
 
@@ -21,10 +24,10 @@ class FSMEditGroup(StatesGroup):
     input_edit_schedule_url = State()
 
 
+@check_if_user_is_admin
 async def start_edit_group(msg: types.Message) -> None:
-    if await is_user_admin(msg):
-        await FSMEditGroup.department.set()
-        await msg.answer('Введіть назву кафедри, до якої належить група.')
+    await FSMEditGroup.department.set()
+    await msg.answer('Введіть назву кафедри, до якої належить група.')
 
 
 async def input_department_for_edit_group(msg: types.Message, state: FSMContext) -> None:

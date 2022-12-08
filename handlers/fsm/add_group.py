@@ -8,7 +8,7 @@ from services.admin import (
     delete_group,
     is_group_exist_by_title_and_department_id
 )
-from services.utils import is_user_admin, is_model_exist_by_name
+from services.utils import check_if_user_is_admin, is_model_exist_by_name
 from database.models import Department, Group
 
 
@@ -18,10 +18,10 @@ class FSMAddGroup(StatesGroup):
     url_schedule = State()
 
 
+@check_if_user_is_admin
 async def start_add_new_group(msg: types.Message):
-    if await is_user_admin(msg):
-        await FSMAddGroup.department.set()
-        await msg.answer('Введіть назву кафедри, до якої належить група.')
+    await FSMAddGroup.department.set()
+    await msg.answer('Введіть назву кафедри, до якої належить група.')
 
 
 async def input_department_for_add_group(msg: types.Message, state: FSMContext):
