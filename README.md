@@ -31,8 +31,8 @@ For start bot you should run next command:
 ```bash
 python3 main.py
 ```
-Also, you can use **docker-compose** for run the bot. For this, you should edit in the docker-compose.yml environment 
-variable `BOT_TOKEN` and start the docker-compose:
+Also, you can use **docker-compose** for run the bot. For this, you should edit in the **_docker-compose.yml_** 
+environment variable `BOT_TOKEN` and start the docker-compose:
 ```bash
 docker-compose up -d
 ```
