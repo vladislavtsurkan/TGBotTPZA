@@ -30,7 +30,7 @@ async def set_default_commands(dp: Dispatcher):
 async def get_text_messages(msg: types.Message):
     print(f'{msg}')
     if not await is_registered_user(msg):
-        await msg.answer('Ви ще не зареєстровані. Будь ласка, введіть назву Вашої групи.')
+        await msg.answer('Будь ласка, введіть назву Вашої групи.')
         await FSMRegistration.group.set()
     else:
         match msg.text.lower():

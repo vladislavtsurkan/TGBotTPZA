@@ -85,7 +85,7 @@ def get_current_week_number() -> int:
     if week_number < 36:
         week_number += 36
 
-    return 1 if week_number % 2 == 0 else 2
+    return week_number % 2 + 1
 
 
 def get_time_of_lesson_by_number(lesson_number: int) -> str:

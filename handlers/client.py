@@ -21,31 +21,29 @@ async def send_welcome(msg: types.Message):
     )
 
     if not await is_registered_user(msg):
-        await msg.answer('Ви ще не зареєстровані. Будь ласка, введіть назву Вашої групи.')
+        await msg.answer('Будь ласка, введіть назву Вашої групи.')
         await FSMRegistration.group.set()
 
 
 @check_if_user_is_registered
 async def get_current_week_lessons(msg: types.Message):
-    if await is_registered_user(msg):
-        answer = await get_lessons_current_or_next_week_for_user(
-            msg.bot.get('db'),
-            user_id=msg.from_user.id,
-            week=get_current_week_number()
-        )
-        await msg.answer(answer)
+    answer = await get_lessons_current_or_next_week_for_user(
+        msg.bot.get('db'),
+        user_id=msg.from_user.id,
+        week=get_current_week_number()
+    )
+    await msg.answer(answer)
 
 
 @check_if_user_is_registered
 async def get_next_week_lessons(msg: types.Message):
-    if await is_registered_user(msg):
-        answer = await get_lessons_current_or_next_week_for_user(
-            msg.bot.get('db'),
-            user_id=msg.from_user.id,
-            week=get_current_week_number(),
-            next_week=True
-        )
-        await msg.answer(answer)
+    answer = await get_lessons_current_or_next_week_for_user(
+        msg.bot.get('db'),
+        user_id=msg.from_user.id,
+        week=get_current_week_number(),
+        next_week=True
+    )
+    await msg.answer(answer)
 
 
 @check_if_user_is_registered

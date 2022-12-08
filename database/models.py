@@ -11,7 +11,7 @@ class User(Base):
     group_id = Column(Integer, ForeignKey('bot_groups.id'))
     is_admin = Column(Boolean, default=False, nullable=False)
 
-    Group = relationship('Group')
+    Group = relationship('Group', back_populates='users')
 
     def __repr__(self):
         return f'<User {self.id}>'
@@ -56,7 +56,7 @@ class Group(Base):
     Department = relationship('Department')
 
     def __repr__(self):
-        return f'<Group "{self.title}">'
+        return f'<Group #{self.id} "{self.title}">'
 
 
 class Discipline(Base):
@@ -93,7 +93,7 @@ class Lesson(Base):
     Discipline = relationship('Discipline')
 
     def __repr__(self):
-        return f'<Lesson by Discipline "{self.Discipline.title}">'
+        return f'<Lesson #{self.id} by Discipline "{self.Discipline.title}">'
 
 
 class Teacher(Base):

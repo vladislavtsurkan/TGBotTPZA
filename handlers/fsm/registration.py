@@ -43,10 +43,10 @@ async def group_select_callback(callback: types.CallbackQuery, state: FSMContext
     group_id = int(data_inline_keyboard[2])
 
     if await register_user(callback.bot.get('db'), group_id, user_id=callback.from_user.id):
-        await callback.message.edit_text('Ви були успішно зареєстровані!', reply_markup=None)
+        await callback.message.edit_text('Чудово. Тепер Ви можете користуватись повним функціоналом.', reply_markup=None)
     else:
         await callback.message.edit_text(
-            'На жаль, сталась помилка при реєстрації.', reply_markup=None
+            'На жаль, сталась помилка при запису даних.', reply_markup=None
         )
     await state.finish()
     await callback.answer()
