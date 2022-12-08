@@ -13,6 +13,10 @@ class FSMRegistration(StatesGroup):
     department = State()
 
 
+async def start_registration(msg: types.Message):
+    await msg.answer('Введіть назву Вашої групи.')
+    await FSMRegistration.group.set()
+
 async def input_name_group(msg: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['group'] = msg.text
@@ -27,10 +31,10 @@ async def input_name_group(msg: types.Message, state: FSMContext):
             case 1:
                 group: Group = groups[0]
                 if await register_user(msg.bot.get('db'), group.id, user_id=msg.from_user.id):
-                    await msg.answer('Ви були успішно зареєстровані!')
+                    await msg.answer('Налаштування групи були успішно збережені.')
                     await state.finish()
                 else:
-                    await msg.answer('На жаль, сталась помилка при реєстрації. '
+                    await msg.answer('На жаль, сталась помилка. '
                                      'Спробуйте ще раз ввести назву своєї групи.')
             case _:
                 await msg.answer('<b>Оберіть свою кафедру серед зазначених нижче:</b>',

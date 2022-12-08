@@ -10,7 +10,8 @@ from services.admin import (
     change_url_schedule_for_group,
     change_department_for_group
 )
-from services.utils import check_if_user_is_admin, is_model_exist_by_name
+from services.utils import is_model_exist_by_name
+from handlers.fsm.decorators import check_user_is_admin, check_user_is_registered
 from keyboards.kb_edit_group import get_keyboard_edit_group
 from database.models import Department, Group
 
@@ -24,7 +25,8 @@ class FSMEditGroup(StatesGroup):
     input_edit_schedule_url = State()
 
 
-@check_if_user_is_admin
+@check_user_is_registered
+@check_user_is_admin
 async def start_edit_group(msg: types.Message) -> None:
     await FSMEditGroup.department.set()
     await msg.answer('Введіть назву кафедри, до якої належить група.')

@@ -1,7 +1,7 @@
 from loguru import logger
 from aiogram import types, Dispatcher
 
-from services.utils import check_if_user_is_admin
+from handlers.fsm.decorators import check_user_is_admin, check_user_is_registered
 
 _admin_commands = """
 <b>👨‍💻 Команди адміністратора:</b>
@@ -16,7 +16,8 @@ _admin_commands = """
 """
 
 
-@check_if_user_is_admin
+@check_user_is_registered
+@check_user_is_admin
 async def get_admin_commands(msg: types.Message):
     await msg.answer(_admin_commands)
 

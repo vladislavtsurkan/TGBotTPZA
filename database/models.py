@@ -11,7 +11,7 @@ class User(Base):
     group_id = Column(Integer, ForeignKey('bot_groups.id'))
     is_admin = Column(Boolean, default=False, nullable=False)
 
-    Group = relationship('Group', back_populates='users')
+    Group = relationship('Group')
 
     def __repr__(self):
         return f'<User {self.id}>'

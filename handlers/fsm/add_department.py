@@ -3,7 +3,8 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 
 from services.admin import create_department
-from services.utils import is_model_exist_by_name, check_if_user_is_admin
+from services.utils import is_model_exist_by_name
+from handlers.fsm.decorators import check_user_is_admin, check_user_is_registered
 from database.models import Faculty, Department
 
 
@@ -13,7 +14,8 @@ class FSMAddDepartment(StatesGroup):
     title_short = State()
 
 
-@check_if_user_is_admin
+@check_user_is_registered
+@check_user_is_admin
 async def start_add_new_department(msg: types.Message):
     await FSMAddDepartment.faculty.set()
     await msg.answer('Введіть назву факультету, до якого належить кафедра.')

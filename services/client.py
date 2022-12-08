@@ -10,7 +10,7 @@ from services.utils import get_time_of_lesson_by_number, get_day_of_week_by_numb
 
 
 async def get_lessons_current_or_next_week_for_user(
-        db_session: sessionmaker, *, user_id: int, week: int, next_week=False
+        db_session: sessionmaker, *, user_id: int, week: int, next_week: bool = False
 ) -> str:
     """Get lessons for user current or next week"""
     async with db_session() as session:
@@ -55,7 +55,7 @@ async def get_lessons_current_or_next_week_for_user(
 
 
 async def get_lessons_today_or_tomorrow_for_user(
-        db_session: sessionmaker, *, user_id: int, week: int, tomorrow=False
+        db_session: sessionmaker, *, user_id: int, week: int, tomorrow: bool = False
 ) -> str:
     """Get lessons for user today or tomorrow"""
     async with db_session() as session:

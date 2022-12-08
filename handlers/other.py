@@ -3,9 +3,8 @@ from loguru import logger
 from aiogram import types, Dispatcher
 from aiogram.utils.exceptions import BotBlocked
 
-from handlers.fsm.registration import FSMRegistration
 from services.other import get_information_all_users
-from services.utils import is_registered_user
+from handlers.fsm.decorators import check_user_is_registered
 
 
 async def error_bot_blocked(update: types.Update, exception: BotBlocked):
@@ -27,27 +26,24 @@ async def set_default_commands(dp: Dispatcher):
     logger.debug("Success set default commands for bot")
 
 
+@check_user_is_registered
 async def get_text_messages(msg: types.Message):
     print(f'{msg}')
-    if not await is_registered_user(msg):
-        await msg.answer('Будь ласка, введіть назву Вашої групи.')
-        await FSMRegistration.group.set()
-    else:
-        match msg.text.lower():
-            case 'тратата':
-                await get_information_all_users(msg)
+    match msg.text.lower():
+        case 'тратата':
+            await get_information_all_users(msg)
 
-            case 'сайт' | 'site':
-                await msg.answer('<a href="http://epi.kpi.ua">Розклад КПІ</a>')
+        case 'сайт' | 'site':
+            await msg.answer('<a href="http://epi.kpi.ua">Розклад КПІ</a>')
 
-            case 'google' | 'гугл':
-                await msg.answer('<a href="https://google.com">Посилання</a>')
+        case 'google' | 'гугл':
+            await msg.answer('<a href="https://google.com">Посилання</a>')
 
-            case 'розробник' | 'developer':
-                await msg.answer('<b>Мій аккаунт: </b><a href="t.me/vladyslavtsurkan">Telegram</a>')
+        case 'розробник' | 'developer':
+            await msg.answer('<b>Мій аккаунт: </b><a href="t.me/vladyslavtsurkan">Telegram</a>')
 
-            case _:
-                await msg.answer('Я вас не розумію.')
+        case _:
+            await msg.answer('Я вас не розумію.')
 
 
 def register_handlers_other(dp: Dispatcher):

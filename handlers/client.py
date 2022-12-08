@@ -1,18 +1,16 @@
 from loguru import logger
 from aiogram import types, Dispatcher
 
-from services.utils import (
-    is_registered_user,
-    get_current_week_number,
-    check_if_user_is_registered
-)
+from handlers.fsm.decorators import check_user_is_registered
+from services.utils import get_current_week_number
 from services.client import (
     get_lessons_today_or_tomorrow_for_user,
     get_lessons_current_or_next_week_for_user
 )
-from handlers.fsm.registration import FSMRegistration
 
 
+
+@check_user_is_registered(allow_function=True)
 async def send_welcome(msg: types.Message):
     await msg.answer(
         f'Я бот-помічник для пошуку розкладу в КПІ. Приємно познайомитись, '
@@ -20,12 +18,8 @@ async def send_welcome(msg: types.Message):
         f'Поки що я нічого не вмію, але це ненадовго =]'
     )
 
-    if not await is_registered_user(msg):
-        await msg.answer('Будь ласка, введіть назву Вашої групи.')
-        await FSMRegistration.group.set()
 
-
-@check_if_user_is_registered
+@check_user_is_registered
 async def get_current_week_lessons(msg: types.Message):
     answer = await get_lessons_current_or_next_week_for_user(
         msg.bot.get('db'),
@@ -35,7 +29,7 @@ async def get_current_week_lessons(msg: types.Message):
     await msg.answer(answer)
 
 
-@check_if_user_is_registered
+@check_user_is_registered
 async def get_next_week_lessons(msg: types.Message):
     answer = await get_lessons_current_or_next_week_for_user(
         msg.bot.get('db'),
@@ -46,7 +40,7 @@ async def get_next_week_lessons(msg: types.Message):
     await msg.answer(answer)
 
 
-@check_if_user_is_registered
+@check_user_is_registered
 async def get_today_lessons(msg: types.Message):
     answer = await get_lessons_today_or_tomorrow_for_user(
         msg.bot.get('db'),
@@ -56,7 +50,7 @@ async def get_today_lessons(msg: types.Message):
     await msg.answer(answer)
 
 
-@check_if_user_is_registered
+@check_user_is_registered
 async def get_tomorrow_lessons(msg: types.Message):
     answer = await get_lessons_today_or_tomorrow_for_user(
         msg.bot.get('db'),
