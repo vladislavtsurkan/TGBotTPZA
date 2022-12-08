@@ -1,5 +1,6 @@
 from datetime import date
 from typing import Any, Type
+
 from aiogram import types
 from sqlalchemy import select
 from sqlalchemy.orm import sessionmaker
@@ -85,3 +86,29 @@ def get_current_week_number() -> int:
         week_number += 36
 
     return 1 if week_number % 2 == 0 else 2
+
+
+def get_time_of_lesson_by_number(lesson_number: int) -> str:
+    """Get time of lesson by number"""
+    return {
+        1: '8:30-10:05',
+        2: '10:25-12:00',
+        3: '12:20-13:55',
+        4: '14:15-15:50',
+        5: '16:10-17:45',
+        6: '18:05-19:40',
+        7: '19:50-21:25',
+    }[lesson_number]
+
+
+def get_day_of_week_by_number(day_number: int) -> str:
+    """Get day of week by number"""
+    return {
+        1: 'Понеділок',
+        2: 'Вівторок',
+        3: 'Середа',
+        4: 'Четвер',
+        5: 'П\'ятниця',
+        6: 'Субота',
+        7: 'Неділя'
+    }[day_number]

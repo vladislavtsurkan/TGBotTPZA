@@ -6,13 +6,13 @@ from sqlalchemy.orm import sessionmaker, joinedload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.models import User, Group, Lesson, Discipline, Teacher
-
-days_of_week = ('Понеділок', 'Вівторок', 'Середа', 'Четвер', 'П\'ятниця', 'Субота', 'Неділя')
+from services.utils import get_time_of_lesson_by_number, get_day_of_week_by_number
 
 
 async def get_lessons_current_or_next_week_for_user(
         db_session: sessionmaker, *, user_id: int, week: int, next_week=False
 ) -> str:
+    """Get lessons for user current or next week"""
     async with db_session() as session:
         user_instance, lessons = await _get_user_instance_and_lessons_by_user_id(session, user_id)
 
@@ -38,7 +38,8 @@ async def get_lessons_current_or_next_week_for_user(
         )
         for day, day_lessons in enumerate(sorted_lessons, 1):
             if day_lessons:
-                answer += f'<em><b>{days_of_week[day - 1]}:</b></em>\n'
+                day_of_week = get_day_of_week_by_number(day)
+                answer += f'<em><b>{day_of_week}:</b></em>\n'
                 for lesson in day_lessons:
                     teachers: Iterable[Teacher] = await session.run_sync(
                         lambda _: lesson.teachers
@@ -56,6 +57,7 @@ async def get_lessons_current_or_next_week_for_user(
 async def get_lessons_today_or_tomorrow_for_user(
         db_session: sessionmaker, *, user_id: int, week: int, tomorrow=False
 ) -> str:
+    """Get lessons for user today or tomorrow"""
     async with db_session() as session:
         user_instance, lessons = await _get_user_instance_and_lessons_by_user_id(session, user_id)
 
@@ -85,8 +87,10 @@ async def get_lessons_today_or_tomorrow_for_user(
             teachers: Iterable[Teacher] = await session.run_sync(
                 lambda _: lesson.teachers
             )
+            lesson_time = get_time_of_lesson_by_number(lesson.number_lesson)
             answer += (
-                f'<b>[{lesson.number_lesson}]</b> <em>{lesson.Discipline.title}</em>\n' +
+                f'<b>[{lesson.number_lesson}] <em>[{lesson_time}]</em></b> '
+                f'<em>{lesson.Discipline.title}</em>\n' +
                 (f'<em>{", ".join(teacher.full_name for teacher in teachers)}</em>\n'
                  if teachers else '') +
                 (f'<em><b>Інформація:</b> {lesson.type_and_location}</em>\n\n'
@@ -99,6 +103,7 @@ async def get_lessons_today_or_tomorrow_for_user(
 async def _get_user_instance_and_lessons_by_user_id(
         session: AsyncSession, user_id: int
 ) -> (User, Iterable[Lesson]):
+    """Get user instance and lessons by user id"""
     sql = select(User, Group).where(
         User.id == user_id, User.group_id == Group.id
     )
@@ -108,5 +113,4 @@ async def _get_user_instance_and_lessons_by_user_id(
     lessons: Iterable[Lesson] = await session.run_sync(
         lambda _: user_instance.Group.lessons
     )
-
     return user_instance, lessons
