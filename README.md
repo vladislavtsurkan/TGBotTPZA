@@ -1,7 +1,7 @@
 ## Telegram Bot for watching the schedule of the Kyiv Polytechnic Institute
 This is a bot for [Telegram](https://telegram.org/) written on [Aiogram](https://docs.aiogram.dev/en/latest/).
 
-List of libraries I used:
+List of libraries that were used in the project:
 - [aiogram](https://docs.aiogram.dev/en/latest/)
 - [sqlalchemy](https://docs.sqlalchemy.org/en/14/)
 - [alembic](https://alembic.sqlalchemy.org/en/latest/)
