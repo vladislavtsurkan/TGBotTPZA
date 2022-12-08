@@ -1,4 +1,5 @@
-from typing import Any
+from datetime import date
+from typing import Any, Type
 from aiogram import types
 from sqlalchemy import select
 from sqlalchemy.orm import sessionmaker
@@ -64,12 +65,23 @@ async def is_registered_user(msg: types.Message) -> bool:
 
 
 async def is_model_exist_by_name(
-        db_session: sessionmaker, title: str, *,
-        class_model: type(Group) | type(Department) | type(Faculty)
+        db_session: sessionmaker, title: str, *, class_model: Type[Group | Department | Faculty]
 ) -> (bool, int):
     """Check if model exist by title (work with Group, Department, Faculty)"""
     async with db_session() as session:
         sql = select(class_model).where(class_model.title == title)
         result = await session.execute(sql)
         instance_model = result.scalars().first()
-        return (is_not_none := (instance_model is not None)), instance_model.id if is_not_none else 0
+        return (
+            is_not_none := (instance_model is not None),
+            instance_model.id if is_not_none else 0
+        )
+
+def get_current_week_number() -> int:
+    """Get current week number of schedule (1 or 2)"""
+    today = date.today()
+    week_number = today.isocalendar()[1]
+    if week_number < 36:
+        week_number += 36
+
+    return 1 if week_number % 2 == 0 else 2

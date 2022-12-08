@@ -21,13 +21,13 @@ logger.add('logs/bot.log', rotation='10 MB', compression='zip', enqueue=True, le
 
 
 async def on_startup(dp: Dispatcher):
-    logger.debug("The bot launch process has been started.")
+    logger.debug("The bot launch process has been started")
     await other.set_default_commands(dp)
     register_all_fsm_handlers(dp)
     admin.register_handlers_admin(dp)
     client.register_handlers_client(dp)
     other.register_handlers_other(dp)
-    logger.debug('The bot launch process has been completed.')
+    logger.debug('The bot launch process has been completed')
 
 
 async def main():
@@ -63,6 +63,7 @@ async def main():
         await dp.storage.close()
         await dp.storage.wait_closed()
         await bot.session.close()
+        await logger.complete()
 
 
 if __name__ == '__main__':

@@ -18,6 +18,10 @@ async def set_default_commands(dp: Dispatcher):
     logger.debug("Start set default commands for bot")
     await dp.bot.set_my_commands([
         types.BotCommand("help", "Інформація"),
+        types.BotCommand("today", "Пари на сьогодні"),
+        types.BotCommand("tomorrow", "Пари завтра"),
+        types.BotCommand("current_week", "Пари поточного тижня"),
+        types.BotCommand("next_week", "Пари наступного тижня"),
         types.BotCommand("cancel", "Відміна дії"),
     ])
     logger.debug("Success set default commands for bot")

@@ -160,6 +160,7 @@ async def test_create_group(get_sessionmaker):
     )
     assert group_instance.title == 'ЛА-п11'
 
+
 @pytest.mark.asyncio
 async def test_is_group_exist_by_title_and_department_id(get_sessionmaker):
     department_instance: Department = await get_department_instance_by_title(
@@ -201,14 +202,20 @@ async def test_change_title_for_group(get_sessionmaker):
     )
     group_intance: Group = group_intances[0]
     await change_title_for_group(
-        get_sessionmaker, 'test', group_id=group_intance.id, department_id=group_intance.department_id
+        get_sessionmaker,
+        'test',
+        group_id=group_intance.id,
+        department_id=group_intance.department_id
     )
     group_instance: Group = await get_group_instance_by_id(
         get_sessionmaker, group_id=group_intance.id, department_id=group_intance.department_id
     )
     assert group_instance.title == 'test'
     await change_title_for_group(
-        get_sessionmaker, 'ЛА-п11', group_id=group_instance.id, department_id=group_instance.department_id
+        get_sessionmaker,
+        'ЛА-п11',
+        group_id=group_instance.id,
+        department_id=group_instance.department_id
     )
     group_instance: Group = await get_group_instance_by_id(
         get_sessionmaker, group_id=group_instance.id, department_id=group_instance.department_id
@@ -266,7 +273,8 @@ async def test_change_url_schedule_for_group(get_sessionmaker):
         get_sessionmaker, group_id=group_instance.id, department_id=group_instance.department_id
     )
     assert (
-        group_instance.schedule_url == 'http://epi.kpi.ua/test' if is_change_url_schedule else old_schedule_url
+        group_instance.schedule_url == 'http://epi.kpi.ua/test'
+        if is_change_url_schedule else old_schedule_url
     )
 
 

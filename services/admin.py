@@ -52,19 +52,19 @@ async def add_information_from_schedule_to_db(
                 )
 
                 lesson_teachers = await session.run_sync(
-                    lambda session_sync: lesson_instance.teachers
+                    lambda _: lesson_instance.teachers
                 )
                 if teacher_instance not in lesson_teachers:
                     await session.run_sync(
-                        lambda session_sync: lesson_instance.teachers.append(teacher_instance)
+                        lambda _: lesson_instance.teachers.append(teacher_instance)
                     )
 
             lesson_groups = await session.run_sync(
-                lambda session_sync: lesson_instance.groups
+                lambda _: lesson_instance.groups
             )
             if group_instance not in lesson_groups:
                 await session.run_sync(
-                    lambda session_sync: lesson_instance.groups.append(group_instance)
+                    lambda _: lesson_instance.groups.append(group_instance)
                 )
 
         await session.commit()
