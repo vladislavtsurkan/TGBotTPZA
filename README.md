@@ -1,5 +1,5 @@
 ## Telegram Bot for watching the schedule of the Kyiv Polytechnic Institute
-This is a bot for [Telegram](https://telegram.org/) written on [Aiogram](https://docs.aiogram.dev/en/latest/).
+This is a bot for [Telegram](https://telegram.org/) written on [Aiogram](https://docs.aiogram.dev/en/latest/) framework.
 
 List of libraries that were used in the project:
 - [aiogram](https://docs.aiogram.dev/en/latest/)
@@ -11,7 +11,7 @@ List of libraries that were used in the project:
 - [pytest](https://docs.pytest.org/en/6.2.x/)
 - [pytest-asyncio](https://github.com/pytest-dev/pytest-asyncio)
 
-
+First of all, you should create a database in MySQL and a database in MongoDB.
 To start using the bot you should set the next **_environment variables_** in your system:
 ```
 BOT_TOKEN = <your_bot_token>
@@ -23,11 +23,12 @@ MONGO_DB_HOST = <mongo_db_host>
 MONGO_DB_NAME = <mongo_db_name>
 MONGO_DB_PORT = <mongo_db_port>
 ```
-For install all dependencies you should run the next command:
+To install all dependencies you should run the next command:
 ```bash
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 ```
-For start bot you should run next command:
+
+You need to change the directory to `src`. To start the bot you should run the next command:
 ```bash
 python3 main.py
 ```
