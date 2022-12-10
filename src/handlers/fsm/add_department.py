@@ -2,10 +2,10 @@ from aiogram import types, Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 
-from services.admin import create_department
-from services.utils import is_model_exist_by_name
-from handlers.fsm.decorators import check_user_is_admin, check_user_is_registered
-from database.models import Faculty, Department
+from src.services.admin import create_department
+from src.services.utils import is_model_exist_by_name
+from src.handlers.fsm.decorators import check_user_is_admin, check_user_is_registered
+from src.database.models import Faculty, Department
 
 
 class FSMAddDepartment(StatesGroup):

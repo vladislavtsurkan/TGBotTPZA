@@ -8,10 +8,10 @@ from aiogram.contrib.fsm_storage.mongo import MongoStorage
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 
-from config_loader import load_config_bot, BotConfig, load_config_mongo_db, MongoDBConfig
-from handlers import client, other, admin
-from handlers.registration_all_fsm_handlers import register_all_fsm_handlers
-from database.base import Base, get_sqlalchemy_url
+from src.config_loader import load_config_bot, BotConfig, load_config_mongo_db, MongoDBConfig
+from src.handlers import client, other, admin
+from src.handlers.registration_all_fsm_handlers import register_all_fsm_handlers
+from src.database.base import Base, get_sqlalchemy_url
 
 logs_folder = Path("logs")
 if not logs_folder.exists():

@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 from time import time
 from pprint import pprint
 
-from parser.datatypes import LessonTuple
+from src.parser.datatypes import LessonTuple
 
 _unknown_field = "Немає інформації"
 _set_days_of_week = {"Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця", "Субота"}

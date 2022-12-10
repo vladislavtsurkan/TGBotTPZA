@@ -7,7 +7,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql.selectable import Select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database.models import User, Group, Department, Faculty
+from src.database.models import User, Group, Department, Faculty
 
 
 async def get_or_create(

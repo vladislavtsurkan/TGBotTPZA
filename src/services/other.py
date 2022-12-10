@@ -1,7 +1,7 @@
 from aiogram import types
 from sqlalchemy import select
 
-from database.models import User, Group, Faculty, Department
+from src.database.models import User, Group, Faculty, Department
 
 
 async def get_information_all_users(msg: types.Message) -> None:

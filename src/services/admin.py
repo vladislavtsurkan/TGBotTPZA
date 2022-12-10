@@ -5,10 +5,10 @@ from sqlalchemy.orm import joinedload, sessionmaker
 from sqlalchemy.exc import SQLAlchemyError
 from aiohttp.client_exceptions import ClientConnectorError
 
-from database.models import User, Faculty, Department, Group, Discipline, Lesson, Teacher
-from parser.parsing import parse_schedule_tables
-from parser.datatypes import LessonTuple
-from services.utils import get_or_create
+from src.database.models import User, Faculty, Department, Group, Discipline, Lesson, Teacher
+from src.parser.parsing import parse_schedule_tables
+from src.parser.datatypes import LessonTuple
+from src.services.utils import get_or_create
 
 
 async def add_information_from_schedule_to_db(

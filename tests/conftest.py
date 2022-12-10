@@ -4,7 +4,7 @@ import pytest_asyncio
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 
-from database.base import get_sqlalchemy_url, Base
+from src.database.base import get_sqlalchemy_url, Base
 
 
 @pytest_asyncio.fixture

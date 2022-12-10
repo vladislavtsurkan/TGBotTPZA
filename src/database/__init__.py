@@ -1,1 +1,1 @@
-from database import models
+from src.database import models

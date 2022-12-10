@@ -2,15 +2,15 @@ from aiogram import types, Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 
-from services.admin import (
+from src.services.admin import (
     add_information_from_schedule_to_db,
     create_group,
     delete_group,
     is_group_exist_by_title_and_department_id
 )
-from services.utils import is_model_exist_by_name
-from handlers.fsm.decorators import check_user_is_admin, check_user_is_registered
-from database.models import Department, Group
+from src.services.utils import is_model_exist_by_name
+from src.handlers.fsm.decorators import check_user_is_admin, check_user_is_registered
+from src.database.models import Department, Group
 
 
 class FSMAddGroup(StatesGroup):

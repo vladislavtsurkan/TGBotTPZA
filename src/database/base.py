@@ -1,7 +1,7 @@
 from typing import TypeAlias
 from sqlalchemy.ext.declarative import declarative_base
 
-from config_loader import load_config_db, DatabaseConfig
+from src.config_loader import load_config_db, DatabaseConfig
 
 sqlalchemy_url: TypeAlias = str
 
