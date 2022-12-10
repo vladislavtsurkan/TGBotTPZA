@@ -1,6 +1,6 @@
 from loguru import logger
 
-from sqlalchemy import select, update, delete
+from sqlalchemy import select, update, delete, text
 from sqlalchemy.orm import joinedload, sessionmaker
 from sqlalchemy.exc import SQLAlchemyError
 from aiohttp.client_exceptions import ClientConnectorError
@@ -253,10 +253,10 @@ async def delete_group(db_session: sessionmaker, *, group_id: int, department_id
         sql_group_table = delete(Group).where(
             Group.department_id == department_id, Group.id == group_id
         )
-        sql_group_lesson_table = f'DELETE FROM lesson_group WHERE group_id = {group_id}'
+        sql_group_lesson_table = text('DELETE FROM lesson_group WHERE group_id = :group_id')
         sql_user_group = delete(User).where(User.group_id == group_id)
 
-        await session.execute(sql_group_lesson_table)
+        await session.execute(sql_group_lesson_table, {'group_id': group_id})
         await session.execute(sql_group_table)
         await session.execute(sql_user_group)
         await session.commit()
@@ -292,8 +292,8 @@ async def change_url_schedule_for_group(db_session: sessionmaker, new_url: str, 
     """Change url schedule for group in database by group_id"""
     async with db_session() as session:
         sql_update_url = update(Group).where(Group.id == group_id).values(schedule_url=new_url)
-        sql_group_lesson_table = f'DELETE FROM lesson_group WHERE group_id = {group_id}'
-        await session.execute(sql_group_lesson_table)
+        sql_group_lesson_table = text('DELETE FROM lesson_group WHERE group_id = :group_id')
+        await session.execute(sql_group_lesson_table, {'group_id': group_id})
         await session.execute(sql_update_url)
         await session.commit()
         sql_group = select(Group).where(Group.id == group_id)

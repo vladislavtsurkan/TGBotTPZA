@@ -2,7 +2,7 @@ version: '3'
 
 services:
   bot_schedule:
-    build: .
+    build: src/.
     command: python main.py
     restart: unless-stopped
     environment:
