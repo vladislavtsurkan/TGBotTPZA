@@ -4,13 +4,13 @@ from aiogram import Dispatcher, types
 from aiogram.dispatcher.filters import Text
 from aiogram.dispatcher import FSMContext
 
-from src.handlers.fsm.add_group import register_handlers_fsm_add_group
-from src.handlers.fsm.add_faculty import register_handlers_fsm_add_faculty
-from src.handlers.fsm.add_department import register_handlers_fsm_add_department
-from src.handlers.fsm.edit_group import register_handlers_fsm_edit_group
-from src.handlers.fsm.edit_department import register_handlers_fsm_edit_department
-from src.handlers.fsm.edit_faculty import register_handlers_fsm_edit_faculty
-from src.handlers.fsm.registration import register_handlers_fsm_registration
+from handlers.fsm.add_group import register_handlers_fsm_add_group
+from handlers.fsm.add_faculty import register_handlers_fsm_add_faculty
+from handlers.fsm.add_department import register_handlers_fsm_add_department
+from handlers.fsm.edit_group import register_handlers_fsm_edit_group
+from handlers.fsm.edit_department import register_handlers_fsm_edit_department
+from handlers.fsm.edit_faculty import register_handlers_fsm_edit_faculty
+from handlers.fsm.registration import register_handlers_fsm_registration
 
 
 async def cancel_handler(msg: types.Message, state: FSMContext):

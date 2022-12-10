@@ -1,7 +1,7 @@
 import pytest
 
-from src.database.models import Faculty, Department, Group
-from src.services.admin import (
+from database.models import Faculty, Department, Group
+from services.admin import (
     create_faculty,
     create_department,
     create_group,

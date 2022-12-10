@@ -3,17 +3,17 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.dispatcher.filters import Text
 
-from src.services.admin import (
+from services.admin import (
     get_group_instance_by_id,
     change_title_for_group,
     delete_group,
     change_url_schedule_for_group,
     change_department_for_group
 )
-from src.services.utils import is_model_exist_by_name
-from src.handlers.fsm.decorators import check_user_is_admin, check_user_is_registered
-from src.keyboards.kb_edit_group import get_keyboard_edit_group
-from src.database.models import Department, Group
+from services.utils import is_model_exist_by_name
+from handlers.fsm.decorators import check_user_is_admin, check_user_is_registered
+from keyboards.kb_edit_group import get_keyboard_edit_group
+from database.models import Department, Group
 
 
 class FSMEditGroup(StatesGroup):

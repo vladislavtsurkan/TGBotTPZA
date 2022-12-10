@@ -1,7 +1,7 @@
 from aiogram import types
 
-from src.services.utils import is_registered_user, is_user_admin
-from src.handlers.fsm.registration import start_registration
+from services.utils import is_registered_user, is_user_admin
+from handlers.fsm.registration import start_registration
 
 
 class check_user_is_registered:

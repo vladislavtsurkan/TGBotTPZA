@@ -3,8 +3,8 @@ from loguru import logger
 from aiogram import types, Dispatcher
 from aiogram.utils.exceptions import BotBlocked
 
-from src.services.other import get_information_all_users
-from src.handlers.fsm.decorators import check_user_is_registered
+from services.other import get_information_all_users
+from handlers.fsm.decorators import check_user_is_registered
 
 
 async def error_bot_blocked(update: types.Update, exception: BotBlocked):

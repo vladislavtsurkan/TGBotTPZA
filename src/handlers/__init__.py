@@ -1,1 +1,1 @@
-from src.handlers import other
+from handlers import other

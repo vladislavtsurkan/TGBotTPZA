@@ -1,1 +1,1 @@
-from src.parser import parsing
+from parser import parsing

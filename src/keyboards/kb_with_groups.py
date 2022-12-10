@@ -1,6 +1,6 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-from src.database.models import Group
+from database.models import Group
 
 
 def get_keyboard_with_groups(groups: list[Group]) -> InlineKeyboardMarkup:

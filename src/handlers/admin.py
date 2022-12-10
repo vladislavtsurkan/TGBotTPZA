@@ -1,7 +1,7 @@
 from loguru import logger
 from aiogram import types, Dispatcher
 
-from src.handlers.fsm.decorators import check_user_is_admin, check_user_is_registered
+from handlers.fsm.decorators import check_user_is_admin, check_user_is_registered
 
 _admin_commands = """
 <b>👨‍💻 Команди адміністратора:</b>

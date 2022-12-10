@@ -1,1 +1,1 @@
-from src.services import admin, other, utils
+from services import admin, other, utils

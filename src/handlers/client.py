@@ -1,9 +1,9 @@
 from loguru import logger
 from aiogram import types, Dispatcher
 
-from src.handlers.fsm.decorators import check_user_is_registered
-from src.services.utils import get_current_week_number
-from src.services.client import (
+from handlers.fsm.decorators import check_user_is_registered
+from services.utils import get_current_week_number
+from services.client import (
     get_lessons_today_or_tomorrow_for_user,
     get_lessons_current_or_next_week_for_user
 )

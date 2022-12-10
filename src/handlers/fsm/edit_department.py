@@ -3,14 +3,14 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.dispatcher.filters import Text
 
-from src.services.admin import (
+from services.admin import (
     get_department_instance_by_title, change_faculty_for_department, delete_department,
     change_title_for_department
 )
-from src.services.utils import is_model_exist_by_name
-from src.handlers.fsm.decorators import check_user_is_admin, check_user_is_registered
-from src.keyboards.kb_edit_department import get_keyboard_edit_department
-from src.database.models import Department, Faculty
+from services.utils import is_model_exist_by_name
+from handlers.fsm.decorators import check_user_is_admin, check_user_is_registered
+from keyboards.kb_edit_department import get_keyboard_edit_department
+from database.models import Department, Faculty
 
 
 class FSMEditDepartment(StatesGroup):

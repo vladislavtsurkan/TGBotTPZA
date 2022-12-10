@@ -5,8 +5,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import sessionmaker, joinedload
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.database.models import User, Group, Lesson, Discipline, Teacher
-from src.services.utils import get_time_of_lesson_by_number, get_day_of_week_by_number
+from database.models import User, Group, Lesson, Discipline, Teacher
+from services.utils import get_time_of_lesson_by_number, get_day_of_week_by_number
 
 
 async def get_lessons_current_or_next_week_for_user(
