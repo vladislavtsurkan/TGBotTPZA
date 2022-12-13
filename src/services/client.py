@@ -10,11 +10,11 @@ from services.utils import get_time_of_lesson_by_number, get_day_of_week_by_numb
 
 
 async def get_lessons_current_or_next_week_for_user(
-        db_session: sessionmaker, *, user_id: int, week: int, next_week: bool = False
+        db_session: sessionmaker, *, group_id: int, week: int, next_week: bool = False
 ) -> str:
     """Get lessons for user current or next week"""
     async with db_session() as session:
-        user_instance, lessons = await _get_user_instance_and_lessons_by_user_id(session, user_id)
+        group_title, lessons = await _get_group_title_and_lessons_by_group_id(session, group_id)
 
         if next_week:
             week = 1 if week == 2 else 2
@@ -34,7 +34,7 @@ async def get_lessons_current_or_next_week_for_user(
 
         answer = (
             f'<b>Пари {"наступного" if next_week else "поточного"} тижня '
-            f'у групи {user_instance.Group.title}:</b>\n\n'
+            f'у групи {group_title}:</b>\n\n'
         )
         for day, day_lessons in enumerate(sorted_lessons, 1):
             if day_lessons:
@@ -55,11 +55,11 @@ async def get_lessons_current_or_next_week_for_user(
 
 
 async def get_lessons_today_or_tomorrow_for_user(
-        db_session: sessionmaker, *, user_id: int, week: int, tomorrow: bool = False
+        db_session: sessionmaker, *, group_id: int, week: int, tomorrow: bool = False
 ) -> str:
     """Get lessons for user today or tomorrow"""
     async with db_session() as session:
-        user_instance, lessons = await _get_user_instance_and_lessons_by_user_id(session, user_id)
+        group_title, lessons = await _get_group_title_and_lessons_by_group_id(session, group_id)
 
         day_of_week = date.today().weekday() + (2 if tomorrow else 1)
         if day_of_week > 7:
@@ -77,11 +77,17 @@ async def get_lessons_today_or_tomorrow_for_user(
             Lesson.week == week
         ).options(joinedload(Lesson.Discipline)).order_by(Lesson.number_lesson)
         result = await session.execute(sql_lessons)
-        current_lessons = result.scalars()
+        current_lessons = tuple(result.scalars())
+
+        current_day = "завтра" if tomorrow else "сьогодні"
+        if len(current_lessons) == 0:
+            return (
+                f'<b>У групи <em>{group_title}</em> {current_day} немає пар</b>'
+            )
 
         answer = (
             f'<b>Пари {"завтра" if tomorrow else "сьогодні"} '
-            f'у групи {user_instance.Group.title}:</b>\n\n'
+            f'у групи {group_title}:</b>\n\n'
         )
         for lesson in current_lessons:
             teachers: Iterable[Teacher] = await session.run_sync(
@@ -100,17 +106,26 @@ async def get_lessons_today_or_tomorrow_for_user(
         return answer
 
 
-async def _get_user_instance_and_lessons_by_user_id(
-        session: AsyncSession, user_id: int
-) -> (User, Iterable[Lesson]):
-    """Get user instance and lessons by user id"""
-    sql = select(User, Group).where(
-        User.id == user_id, User.group_id == Group.id
+async def get_group_id_by_user_id(db_session: sessionmaker, *, user_id: int) -> int:
+    """Get group id by user id"""
+    async with db_session() as session:
+        sql_user = select(User).where(User.id == user_id)
+        result = await session.execute(sql_user)
+        user = result.scalars().first()
+        return user.group_id
+
+
+async def _get_group_title_and_lessons_by_group_id(
+        session: AsyncSession, group_id: int
+) -> (str, Iterable[Lesson]):
+    """Get group title and lessons by group id"""
+    sql = select(Group).where(
+        Group.id == group_id
     )
     result = await session.execute(sql)
-    user_instance: User = result.scalars().first()
+    group_instance: Group = result.scalars().first()
 
     lessons: Iterable[Lesson] = await session.run_sync(
-        lambda _: user_instance.Group.lessons
+        lambda _: group_instance.lessons
     )
-    return user_instance, lessons
+    return group_instance.title, lessons

@@ -21,7 +21,7 @@ class Faculty(Base):
     __tablename__ = 'bot_faculties'
 
     id = Column(Integer, primary_key=True)
-    title = Column(String(50), nullable=False, unique=True)
+    title = Column(String(100), nullable=False, unique=True)
     title_short = Column(String(10), nullable=False)
 
     def __repr__(self):
@@ -32,7 +32,7 @@ class Department(Base):
     __tablename__ = 'bot_departments'
 
     id = Column(Integer, primary_key=True)
-    title = Column(String(50), nullable=False, unique=True)
+    title = Column(String(100), nullable=False, unique=True)
     title_short = Column(String(10), nullable=False)
     faculty_id = Column(Integer, ForeignKey('bot_faculties.id'))
 
@@ -63,7 +63,7 @@ class Discipline(Base):
     __tablename__ = 'bot_disciplines'
 
     id = Column(Integer, primary_key=True)
-    title = Column(String(150), nullable=False, unique=True)
+    title = Column(String(200), nullable=False, unique=True)
 
     def __repr__(self):
         return f'<Discipline "{self.title}">'
@@ -88,7 +88,7 @@ class Lesson(Base):
     week = Column(Integer, nullable=False)
     day = Column(Integer, nullable=False)
     number_lesson = Column(Integer, nullable=False)
-    type_and_location = Column(String(100), nullable=False)
+    type_and_location = Column(String(150), nullable=False)
 
     Discipline = relationship('Discipline')
 
@@ -100,7 +100,7 @@ class Teacher(Base):
     __tablename__ = 'bot_teachers'
 
     id = Column(Integer, primary_key=True)
-    full_name = Column(String(100), unique=True)
+    full_name = Column(String(150), unique=True)
 
     def __repr__(self):
         return f'<Teacher "{self.full_name}">'
@@ -111,7 +111,7 @@ class Task(Base):
 
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('bot_users.id'))
-    description = Column(String(200), nullable=False)
+    description = Column(String(300), nullable=False)
 
     User = relationship('User')
 

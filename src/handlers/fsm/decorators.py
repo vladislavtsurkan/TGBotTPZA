@@ -6,7 +6,9 @@ from handlers.fsm.registration import start_registration
 
 class check_user_is_registered:
     """Check if user is registered (decorator)"""
-    def __init__(self, func=None, _initialized: bool = False, allow_function: bool = False):
+    def __init__(
+            self, func: callable = None, _initialized: bool = False, allow_function: bool = False
+    ) -> None:
         self.func = func
         self.allow_function = allow_function
         self._initialized = _initialized
@@ -35,7 +37,7 @@ class check_user_is_registered:
         return wrapper(args[0])
 
 
-def check_user_is_admin(func):
+def check_user_is_admin(func: callable):
     """Check if user is admin (decorator)"""
     async def wrapper(msg: types.Message):
         if await is_user_admin(msg):

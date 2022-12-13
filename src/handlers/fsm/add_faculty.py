@@ -37,9 +37,12 @@ async def input_faculty_title_short(msg: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['title_short'] = msg.text
 
-        if len(msg.text) > 2:
+        if len(msg.text) >= 2:
             await create_faculty(msg.bot.get('db'), data['title'], data['title_short'].upper())
-            await msg.answer(f"Новий факультет було додано в базу даних: {data['title']} ({data['title_short']})")
+            await msg.answer(
+                f"Новий факультет було додано в базу даних: {data['title']} "
+                f"({data['title_short']})."
+            )
             await state.finish()
 
 

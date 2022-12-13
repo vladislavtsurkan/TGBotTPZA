@@ -74,7 +74,7 @@ async def input_title_for_edit_group(msg: types.Message, state: FSMContext) -> N
 
 async def group_edit_callback(callback: types.CallbackQuery, state: FSMContext):
     data_inline_keyboard = callback.data.split()
-    print(data_inline_keyboard)
+
     async with state.proxy() as data:
         match data_inline_keyboard:
             case 'group', 'change_title':

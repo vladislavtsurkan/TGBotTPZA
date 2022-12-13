@@ -288,7 +288,9 @@ async def change_department_for_group(
         await session.commit()
 
 
-async def change_url_schedule_for_group(db_session: sessionmaker, new_url: str, *, group_id) -> bool:
+async def change_url_schedule_for_group(
+        db_session: sessionmaker, new_url: str, *, group_id
+) -> bool:
     """Change url schedule for group in database by group_id"""
     async with db_session() as session:
         sql_update_url = update(Group).where(Group.id == group_id).values(schedule_url=new_url)

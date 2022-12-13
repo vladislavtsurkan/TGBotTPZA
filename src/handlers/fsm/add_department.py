@@ -54,12 +54,12 @@ async def input_title_short_for_add_department(msg: types.Message, state: FSMCon
     async with state.proxy() as data:
         data['title_short'] = msg.text
 
-        if len(msg.text) > 2:
+        if len(msg.text) >= 2:
             await create_department(
                 msg.bot.get('db'), data['faculty_id'], data['title'], data['title_short'].upper()
             )
             await msg.answer(
-                f"Нову кафедру було додано в базу даних: {data['title']} ({data['title_short']})"
+                f"Нову кафедру було додано в базу даних: {data['title']} ({data['title_short']})."
             )
             await state.finish()
 
