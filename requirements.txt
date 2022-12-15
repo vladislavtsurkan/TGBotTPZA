@@ -5,7 +5,7 @@ pymongo==4.3.3
 motor==3.1.1
 asyncmy==0.2.5
 beautifulsoup4==4.11.1
-lxml==4.9.1
+lxml==4.9.2
 SQLAlchemy==1.4.45
 alembic==1.8.1
 loguru==0.6.0
