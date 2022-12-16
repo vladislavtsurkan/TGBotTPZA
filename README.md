@@ -8,6 +8,7 @@ List of libraries that were used in the project:
 - [aiohttp](https://docs.aiohttp.org/en/stable/)
 - [beautifulsoup4](https://www.crummy.com/software/BeautifulSoup/bs4/doc/)
 - [lxml](https://lxml.de/)
+- [loguru](https://loguru.readthedocs.io/en/stable/)
 - [pytest](https://docs.pytest.org/en/6.2.x/)
 - [pytest-asyncio](https://github.com/pytest-dev/pytest-asyncio)
 
