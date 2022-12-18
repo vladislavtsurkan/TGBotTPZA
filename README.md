@@ -16,10 +16,10 @@ First of all, you should create a database in MySQL and a database in MongoDB.
 To start using the bot you should set the next **_environment variables_** in your system:
 ```
 BOT_TOKEN = <your_bot_token>
-DB_HOST = <mysql_db_host>
-DB_USER = <mysql_db_user>
-DB_PASSWORD = <mysql_db_password>
-DB_NAME = <mysql_db_name>
+DB_HOST = <postgresql_db_host>
+DB_USER = <postgresql_db_user>
+DB_PASSWORD = <postgresql_db_password>
+DB_NAME = <postgresql_db_name>
 MONGO_DB_HOST = <mongo_db_host>
 MONGO_DB_NAME = <mongo_db_name>
 MONGO_DB_PORT = <mongo_db_port>

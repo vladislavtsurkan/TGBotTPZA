@@ -9,37 +9,33 @@ services:
       MONGO_DB_HOST: mongo
       MONGO_DB_NAME: aiogram_fsm
       MONGO_DB_PORT: 27017
-      DB_HOST: mysql
+      DB_HOST: postgresql
       DB_USER: aiogram
       DB_PASS: aiogram
       DB_NAME: schedule_bot_db
       BOT_TOKEN: 5740240406:AAHqlN-bos-fmmuKAjrkwHp-NFujf_0sk5E
       LOGURU_LEVEL: WARNING
     links:
-      - mysql
+      - postgresql
       - mongo
     depends_on:
       - mongo
-      - mysql
+      - postgresql
 
-  mysql:
-    image: mysql:8.0.31
+  postgresql:
+    image: postgres:15.1
     restart: unless-stopped
     ports:
-      - "3306:3306"
+      - "5432:5432"
     environment:
-      MYSQL_DATABASE: schedule_bot_db
-      MYSQL_USER: aiogram
-      MYSQL_PASSWORD: aiogram
-      MYSQL_ROOT_PASSWORD: aiogram
+      POSTGRES_USER: aiogram
+      POSTGRES_PASSWORD: aiogram
+      POSTGRES_DB: schedule_bot_db
     volumes:
-      - my-db:/var/lib/mysql
+      - ./data/db:/var/lib/postgresql/data
 
   mongo:
     image: mongo:6.0.2
     restart: unless-stopped
     ports:
       - "27017:27017"
-
-volumes:
-  my-db:
