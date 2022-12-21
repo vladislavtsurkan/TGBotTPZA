@@ -3,7 +3,8 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
 from aiogram.dispatcher.filters.state import State, StatesGroup
 
-from services.admin import register_user, get_groups_instances_by_title
+from services.admin import get_groups_instances_by_title
+from services.other import register_user
 from keyboards.kb_with_groups import get_keyboard_with_groups
 from database.models import Group
 

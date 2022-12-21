@@ -3,7 +3,6 @@ from loguru import logger
 from aiogram import types, Dispatcher
 
 from handlers.fsm.decorators import check_user_is_registered
-from services.utils import get_current_week_number
 from services.client import (
     get_lessons_today_or_tomorrow_for_user,
     get_lessons_current_or_next_week_for_user,
@@ -11,7 +10,6 @@ from services.client import (
 )
 from services.admin import get_groups_instances_by_title
 from keyboards.kb_with_groups_schedule import get_keyboard_with_groups
-
 
 
 @check_user_is_registered(allow_function=True)
@@ -32,7 +30,6 @@ async def get_current_week_lessons(msg: types.Message):
     answer = await get_lessons_current_or_next_week_for_user(
         msg.bot.get('db'),
         group_id=group_id,
-        week=get_current_week_number()
     )
     await msg.answer(answer)
 
@@ -46,7 +43,6 @@ async def get_next_week_lessons(msg: types.Message):
     answer = await get_lessons_current_or_next_week_for_user(
         msg.bot.get('db'),
         group_id=group_id,
-        week=get_current_week_number(),
         next_week=True
     )
     await msg.answer(answer)
@@ -61,7 +57,6 @@ async def get_today_lessons(msg: types.Message):
     answer = await get_lessons_today_or_tomorrow_for_user(
         msg.bot.get('db'),
         group_id=group_id,
-        week=get_current_week_number()
     )
     await msg.answer(answer)
 
@@ -75,7 +70,6 @@ async def get_tomorrow_lessons(msg: types.Message):
     answer = await get_lessons_today_or_tomorrow_for_user(
         msg.bot.get('db'),
         group_id=group_id,
-        week=get_current_week_number(),
         tomorrow=True
     )
     await msg.answer(answer)
@@ -114,26 +108,22 @@ async def group_schedule_callback(callback: types.CallbackQuery):
             answer = await get_lessons_today_or_tomorrow_for_user(
                 callback.bot.get('db'),
                 group_id=group_id,
-                week=get_current_week_number()
             )
         case 'tomorrow':
             answer = await get_lessons_today_or_tomorrow_for_user(
                 callback.bot.get('db'),
                 group_id=group_id,
-                week=get_current_week_number(),
                 tomorrow=True
             )
         case 'current_week':
             answer = await get_lessons_current_or_next_week_for_user(
                 callback.bot.get('db'),
-                group_id=group_id,
-                week=get_current_week_number()
+                group_id=group_id
             )
         case 'next_week':
             answer = await get_lessons_current_or_next_week_for_user(
                 callback.bot.get('db'),
                 group_id=group_id,
-                week=get_current_week_number(),
                 next_week=True
             )
         case _:

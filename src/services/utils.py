@@ -1,5 +1,5 @@
+from typing import Type
 from datetime import date
-from typing import Any, Type
 
 from aiogram import types
 from sqlalchemy import select
@@ -7,12 +7,12 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql.selectable import Select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database.models import User, Group, Department, Faculty
+from database.models import Base, User, Group, Department, Faculty
 
 
 async def get_or_create(
-        session: AsyncSession, class_model: Any, sql: Select, **kwargs
-) -> (Any, bool):
+        session: AsyncSession, class_model: Type[Base], sql: Select, **kwargs
+) -> (Type[Base], bool):
     """Get or create model by class_model and sql for search instance"""
     result = await session.execute(sql)
     instance = result.scalars().first()
@@ -112,3 +112,17 @@ def get_day_of_week_by_number(day_number: int) -> str:
         6: 'Субота',
         7: 'Неділя'
     }[day_number]
+
+
+def get_current_day_and_week_of_schedule_number(
+        *, is_tomorrow: bool = False
+) -> (int, int):
+    """Get current day and week number (1-7 and 1 or 2)"""
+    day_of_week_number = date.today().weekday() + (2 if is_tomorrow else 1)
+    week_of_schedule_number = get_current_week_number()
+
+    if day_of_week_number > 7:
+        day_of_week_number = 1
+        week_of_schedule_number = 1 if week_of_schedule_number == 2 else 2
+
+    return day_of_week_number, week_of_schedule_number

@@ -3,7 +3,6 @@ from loguru import logger
 from aiogram import types, Dispatcher
 from aiogram.utils.exceptions import BotBlocked
 
-from services.other import get_information_all_users
 from handlers.fsm.decorators import check_user_is_registered
 
 
@@ -30,18 +29,12 @@ async def set_default_commands(dp: Dispatcher):
 async def get_text_messages(msg: types.Message):
     print(f'{msg}')
     match msg.text.lower():
-        case 'тратата':
-            await get_information_all_users(msg)
-
         case 'сайт' | 'site':
             await msg.answer('<a href="http://epi.kpi.ua">Розклад КПІ</a>')
-
         case 'google' | 'гугл':
             await msg.answer('<a href="https://google.com">Посилання</a>')
-
         case 'розробник' | 'developer':
             await msg.answer('<b>Мій аккаунт: </b><a href="t.me/vladyslavtsurkan">Telegram</a>')
-
         case _:
             await msg.answer('Я вас не розумію.')
 

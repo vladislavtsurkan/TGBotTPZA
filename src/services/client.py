@@ -1,29 +1,33 @@
 from typing import Iterable
-from datetime import date
 
 from sqlalchemy import select
 from sqlalchemy.orm import sessionmaker, joinedload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.models import User, Group, Lesson, Discipline, Teacher
-from services.utils import get_time_of_lesson_by_number, get_day_of_week_by_number
+from services.utils import (
+    get_time_of_lesson_by_number,
+    get_day_of_week_by_number,
+    get_current_day_and_week_of_schedule_number
+)
 
 
 async def get_lessons_current_or_next_week_for_user(
-        db_session: sessionmaker, *, group_id: int, week: int, next_week: bool = False
+        db_session: sessionmaker, *, group_id: int, next_week: bool = False
 ) -> str:
     """Get lessons for user current or next week"""
     async with db_session() as session:
         group_title, lessons = await _get_group_title_and_lessons_by_group_id(session, group_id)
+        _, week_of_schedule_number = get_current_day_and_week_of_schedule_number()
 
         if next_week:
-            week = 1 if week == 2 else 2
+            week_of_schedule_number = 1 if week_of_schedule_number == 2 else 2
 
-        current_lessons_id = [lesson.id for lesson in lessons if lesson.week == week]
+        current_lessons_id = [lesson.id for lesson in lessons if lesson.week == week_of_schedule_number]
         sql_lessons = select(Lesson, Discipline).where(
             Lesson.discipline_id == Discipline.id,
             Lesson.id.in_(current_lessons_id),
-            Lesson.week == week
+            Lesson.week == week_of_schedule_number
         ).options(joinedload(Lesson.Discipline)).order_by(Lesson.day, Lesson.number_lesson)
         result = await session.execute(sql_lessons)
         current_lessons = tuple(result.scalars())
@@ -55,26 +59,26 @@ async def get_lessons_current_or_next_week_for_user(
 
 
 async def get_lessons_today_or_tomorrow_for_user(
-        db_session: sessionmaker, *, group_id: int, week: int, tomorrow: bool = False
+        db_session: sessionmaker, *, group_id: int, tomorrow: bool = False
 ) -> str:
     """Get lessons for user today or tomorrow"""
     async with db_session() as session:
         group_title, lessons = await _get_group_title_and_lessons_by_group_id(session, group_id)
 
-        day_of_week = date.today().weekday() + (2 if tomorrow else 1)
-        if day_of_week > 7:
-            day_of_week = 1
-            week = 1 if week == 2 else 2
+        day_of_week_number, week_of_schedule_number = get_current_day_and_week_of_schedule_number(
+            is_tomorrow=tomorrow
+        )
 
         current_lessons_id = [
-            lesson.id for lesson in lessons if lesson.day == day_of_week and lesson.week == week
+            lesson.id for lesson in lessons if lesson.day == day_of_week_number and
+                                               lesson.week == week_of_schedule_number
         ]
 
         sql_lessons = select(Lesson, Discipline).where(
             Lesson.discipline_id == Discipline.id,
-            Lesson.day == day_of_week,
+            Lesson.day == day_of_week_number,
             Lesson.id.in_(current_lessons_id),
-            Lesson.week == week
+            Lesson.week == week_of_schedule_number
         ).options(joinedload(Lesson.Discipline)).order_by(Lesson.number_lesson)
         result = await session.execute(sql_lessons)
         current_lessons = tuple(result.scalars())

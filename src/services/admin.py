@@ -11,6 +11,26 @@ from parser.datatypes import LessonTuple
 from services.utils import get_or_create
 
 
+async def try_register_first_admin(db_session: sessionmaker, *, user_id: int) -> bool:
+    """Create first admin user in database if not exist admin users"""
+    async with db_session() as session:
+        sql = select(User).where(User.is_admin == True)
+        result = await session.execute(sql)
+        admin_user = result.scalars().first()
+
+        if admin_user is None:
+            try:
+                await session.merge(User(id=user_id, is_admin=True))
+                await session.commit()
+            except SQLAlchemyError:
+                logger.exception('Failed try register first admin')
+                return False
+            else:
+                return True
+
+        return False
+
+
 async def add_information_from_schedule_to_db(
         db_session: sessionmaker, group_instance: Group
 ) -> bool:
@@ -303,18 +323,3 @@ async def change_url_schedule_for_group(
         group_instance = result.scalars().first()
 
     return await add_information_from_schedule_to_db(db_session, group_instance)
-
-
-async def register_user(db_session: sessionmaker, group_id: int, *, user_id: int) -> bool:
-    """Register user in database"""
-    async with db_session() as session:
-        try:
-            await session.merge(
-                User(id=user_id, group_id=group_id, is_admin=False)
-            )
-            await session.commit()
-        except SQLAlchemyError:
-            logger.exception('Failed try save new User in database')
-            return False
-        else:
-            return True

@@ -1,21 +1,21 @@
-from aiogram import types
-from sqlalchemy import select
+from loguru import logger
 
-from database.models import User, Group, Faculty, Department
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import sessionmaker
+
+from database.models import User
 
 
-async def get_information_all_users(msg: types.Message) -> None:
-    db_session = msg.bot.get('db')
-
+async def register_user(db_session: sessionmaker, group_id: int, *, user_id: int) -> bool:
+    """Register user in database"""
     async with db_session() as session:
-        sql = select(User, Group, Department, Faculty).where(
-            User.group_id == Group.id, Department.id == Group.department_id,
-            Faculty.id == Department.faculty_id
-        )
-
-        result = await session.execute(sql)
-        users = result.scalars()
-
-        for user in users:
-            print(f'{user.id} / {user.Group.title} / {user.Group.Department.title} / '
-                  f'{user.Group.Department.Faculty.title}')
+        try:
+            await session.merge(
+                User(id=user_id, group_id=group_id, is_admin=False)
+            )
+            await session.commit()
+        except SQLAlchemyError:
+            logger.exception('Failed try save new User in database')
+            return False
+        else:
+            return True
