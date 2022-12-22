@@ -38,6 +38,8 @@ environment variable `BOT_TOKEN` and start the docker-compose:
 ```bash
 docker-compose up -d
 ```
+To get administrator rights, you need to send the bot command `/get_admin`. 
+It works if in the database doesn`t exist users with administrator permissions.
 > **Authors:** 
 > - [Vladyslav Tsurkan](https://t.me/vladyslavtsurkan)
 > - [Tetyana Savchenko](https://t.me/leasael)
