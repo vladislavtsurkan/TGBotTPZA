@@ -12,7 +12,7 @@ List of libraries that were used in the project:
 - [pytest](https://docs.pytest.org/en/6.2.x/)
 - [pytest-asyncio](https://github.com/pytest-dev/pytest-asyncio)
 
-First of all, you should create a database in MySQL and a database in MongoDB.
+First of all, you should create a database in PostgreSQL.
 To start using the bot you should set the next **_environment variables_** in your system:
 ```
 BOT_TOKEN = <your_bot_token>
