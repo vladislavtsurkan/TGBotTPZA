@@ -163,7 +163,7 @@ async def get_department_instance_by_title(
     async with db_session() as session:
         sql = select(Department, Faculty).where(
             Department.title == title, Department.faculty_id == Faculty.id
-        )
+        ).options(joinedload(Department.Faculty))
         result = await session.execute(sql)
         department_instance: Department | None = result.scalars().first()
         return department_instance

@@ -27,7 +27,6 @@ async def set_default_commands(dp: Dispatcher):
 
 @check_user_is_registered
 async def get_text_messages(msg: types.Message):
-    print(f'{msg}')
     match msg.text.lower():
         case 'сайт' | 'site':
             await msg.answer('<a href="http://epi.kpi.ua">Розклад КПІ</a>')
