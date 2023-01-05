@@ -1,5 +1,5 @@
-cryptography==38.0.4
-aiogram==2.23.1
+cryptography==39.0.0
+aiogram==2.24
 aiohttp==3.8.3
 pymongo==4.3.3
 motor==3.1.1
@@ -7,7 +7,7 @@ asyncpg==0.27.0
 beautifulsoup4==4.11.1
 lxml==4.9.2
 SQLAlchemy==1.4.45
-alembic==1.9.0
+alembic==1.9.1
 loguru==0.6.0
 pytest==7.2.0
 pytest-asyncio==0.20.3
