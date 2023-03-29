@@ -26,7 +26,7 @@ async def input_faculty_for_add_department(msg: types.Message, state: FSMContext
         data['faculty_name'] = msg.text
 
         is_exist, faculty_id = await is_model_exist_by_name(
-            msg.bot.get('db'), msg.text, class_model=Faculty
+            msg.text, class_model=Faculty
         )
         if is_exist:
             await msg.answer('Факультет з такою назвою існує. Тепер введіть назву кафедри.')
@@ -41,7 +41,7 @@ async def input_title_for_add_department(msg: types.Message, state: FSMContext):
         data['title'] = msg.text
 
         is_exist, department_id = await is_model_exist_by_name(
-            msg.bot.get('db'), msg.text, class_model=Department
+            msg.text, class_model=Department
         )
         if is_exist:
             await msg.answer('Помилка. Кафедра з такою назвою вже існує.')
@@ -56,7 +56,7 @@ async def input_title_short_for_add_department(msg: types.Message, state: FSMCon
 
         if len(msg.text) >= 2:
             await create_department(
-                msg.bot.get('db'), data['faculty_id'], data['title'], data['title_short'].upper()
+               data['faculty_id'], data['title'], data['title_short'].upper()
             )
             await msg.answer(
                 f"Нову кафедру було додано в базу даних: {data['title']} ({data['title_short']})."

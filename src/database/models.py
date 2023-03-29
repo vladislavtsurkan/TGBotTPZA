@@ -1,5 +1,5 @@
 from sqlalchemy import Column, ForeignKey, String, Integer, Boolean, Table, UniqueConstraint
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Mapped
 
 from database.base import Base
 
@@ -7,9 +7,9 @@ from database.base import Base
 class User(Base):
     __tablename__ = 'bot_users'
 
-    id = Column(Integer, primary_key=True)
-    group_id = Column(Integer, ForeignKey('bot_groups.id'))
-    is_admin = Column(Boolean, default=False, nullable=False)
+    id: Mapped[int] = Column(Integer, primary_key=True)
+    group_id: Mapped[int] = Column(Integer, ForeignKey('bot_groups.id'))
+    is_admin: Mapped[bool] = Column(Boolean, default=False, nullable=False)
 
     Group = relationship('Group')
 
@@ -20,9 +20,9 @@ class User(Base):
 class Faculty(Base):
     __tablename__ = 'bot_faculties'
 
-    id = Column(Integer, primary_key=True)
-    title = Column(String(100), nullable=False, unique=True)
-    title_short = Column(String(10), nullable=False)
+    id: Mapped[int] = Column(Integer, primary_key=True)
+    title: Mapped[str] = Column(String(100), nullable=False, unique=True)
+    title_short: Mapped[str] = Column(String(10), nullable=False)
 
     def __repr__(self):
         return f'<Faculty "{self.title}" ({self.title_short})>'
@@ -31,10 +31,10 @@ class Faculty(Base):
 class Department(Base):
     __tablename__ = 'bot_departments'
 
-    id = Column(Integer, primary_key=True)
-    title = Column(String(100), nullable=False, unique=True)
-    title_short = Column(String(10), nullable=False)
-    faculty_id = Column(Integer, ForeignKey('bot_faculties.id'))
+    id: Mapped[int] = Column(Integer, primary_key=True)
+    title: Mapped[str] = Column(String(100), nullable=False, unique=True)
+    title_short: Mapped[str] = Column(String(10), nullable=False)
+    faculty_id: Mapped[int] = Column(Integer, ForeignKey('bot_faculties.id'))
 
     Faculty = relationship('Faculty')
 
@@ -45,10 +45,10 @@ class Department(Base):
 class Group(Base):
     __tablename__ = 'bot_groups'
 
-    id = Column(Integer, primary_key=True)
-    title = Column(String(10))
-    schedule_url = Column(String(200))
-    department_id = Column(Integer, ForeignKey('bot_departments.id'))
+    id: Mapped[int] = Column(Integer, primary_key=True)
+    title: Mapped[str] = Column(String(10))
+    schedule_url: Mapped[str] = Column(String(200))
+    department_id: Mapped[int] = Column(Integer, ForeignKey('bot_departments.id'))
     __table_args__ = (
         UniqueConstraint('department_id', 'title', name='_department_id_title_str_uc'),
     )
@@ -62,8 +62,8 @@ class Group(Base):
 class Discipline(Base):
     __tablename__ = 'bot_disciplines'
 
-    id = Column(Integer, primary_key=True)
-    title = Column(String(200), nullable=False, unique=True)
+    id: Mapped[int] = Column(Integer, primary_key=True)
+    title: Mapped[str] = Column(String(200), nullable=False, unique=True)
 
     def __repr__(self):
         return f'<Discipline "{self.title}">'
@@ -81,14 +81,14 @@ lesson_group = Table('lesson_group', Base.metadata,
 class Lesson(Base):
     __tablename__ = 'bot_lessons'
 
-    id = Column(Integer, primary_key=True)
-    discipline_id = Column(Integer, ForeignKey('bot_disciplines.id'))
+    id: Mapped[int] = Column(Integer, primary_key=True)
+    discipline_id: Mapped[int] = Column(Integer, ForeignKey('bot_disciplines.id'))
     groups = relationship('Group', secondary=lesson_group, backref='lessons')
     teachers = relationship('Teacher', secondary=lesson_teacher, backref='lessons')
-    week = Column(Integer, nullable=False)
-    day = Column(Integer, nullable=False)
-    number_lesson = Column(Integer, nullable=False)
-    type_and_location = Column(String(150), nullable=False)
+    week: Mapped[int] = Column(Integer, nullable=False)
+    day: Mapped[int] = Column(Integer, nullable=False)
+    number_lesson: Mapped[int] = Column(Integer, nullable=False)
+    type_and_location: Mapped[str] = Column(String(150), nullable=False)
 
     Discipline = relationship('Discipline')
 
@@ -99,8 +99,8 @@ class Lesson(Base):
 class Teacher(Base):
     __tablename__ = 'bot_teachers'
 
-    id = Column(Integer, primary_key=True)
-    full_name = Column(String(150), unique=True)
+    id: Mapped[int] = Column(Integer, primary_key=True)
+    full_name: Mapped[str] = Column(String(150), unique=True)
 
     def __repr__(self):
         return f'<Teacher "{self.full_name}">'
@@ -109,9 +109,9 @@ class Teacher(Base):
 class Task(Base):
     __tablename__ = 'bot_tasks'
 
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('bot_users.id'))
-    description = Column(String(300), nullable=False)
+    id: Mapped[int] = Column(Integer, primary_key=True)
+    user_id: Mapped[int] = Column(Integer, ForeignKey('bot_users.id'))
+    description: Mapped[str] = Column(String(300), nullable=False)
 
     User = relationship('User')
 

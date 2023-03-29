@@ -33,7 +33,7 @@ async def input_title_for_edit_department(msg: types.Message, state: FSMContext)
         data['title'] = msg.text
 
         department_instance: Department = await get_department_instance_by_title(
-            msg.bot.get('db'), msg.text
+           msg.text
         )
         if department_instance:
             await msg.answer(
@@ -68,7 +68,7 @@ async def department_edit_callback(callback: types.CallbackQuery, state: FSMCont
                     'Кафедру разом зі зв\'язаними групами було видалено!',
                     reply_markup=None
                 )
-                await delete_department(callback.bot.get('db'), department_id=data['department_id'])
+                await delete_department(department_id=data['department_id'])
                 await state.finish()
 
     await callback.answer()
@@ -86,7 +86,8 @@ async def input_new_title_short_for_edit_department(msg: types.Message, state: F
         data['new_title_short'] = msg.text
         await msg.answer(f'Назва кафедри була змінена на: {data["new_title"]} ({data["new_title_short"]})')
         await change_title_for_department(
-            msg.bot.get('db'), department_id=data['department_id'], title=data['new_title'],
+            department_id=data['department_id'],
+            title=data['new_title'],
             title_short=data['new_title_short']
         )
         await state.finish()
@@ -97,12 +98,12 @@ async def input_new_faculty_for_edit_department(msg: types.Message, state: FSMCo
         data['department_name'] = msg.text
 
         is_exist, faculty_id = await is_model_exist_by_name(
-            msg.bot.get('db'), msg.text, class_model=Faculty
+            msg.text, class_model=Faculty
         )
         if is_exist:
             data['new_faculty_id'] = faculty_id
             await change_faculty_for_department(
-                msg.bot.get('db'), department_id=data['department_id'],
+                department_id=data['department_id'],
                 faculty_id=data['new_faculty_id']
             )
             await msg.answer('Факультет було успішно замінено!')

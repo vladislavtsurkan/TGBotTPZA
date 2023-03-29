@@ -24,7 +24,7 @@ async def get_admin_commands(msg: types.Message):
 
 
 async def register_first_admin(msg: types.Message):
-    if await try_register_first_admin(msg.bot.get('db'), user_id=msg.from_user.id):
+    if await try_register_first_admin(user_id=msg.from_user.id):
         await msg.answer('Ви успішно отримали права адміністратора.')
 
 

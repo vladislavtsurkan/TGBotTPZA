@@ -28,7 +28,6 @@ async def get_current_week_lessons(msg: types.Message):
         return
 
     answer = await get_lessons_current_or_next_week_for_user(
-        msg.bot.get('db'),
         group_id=group_id,
     )
     await msg.answer(answer)
@@ -41,7 +40,6 @@ async def get_next_week_lessons(msg: types.Message):
         return
 
     answer = await get_lessons_current_or_next_week_for_user(
-        msg.bot.get('db'),
         group_id=group_id,
         next_week=True
     )
@@ -55,7 +53,6 @@ async def get_today_lessons(msg: types.Message):
         return
 
     answer = await get_lessons_today_or_tomorrow_for_user(
-        msg.bot.get('db'),
         group_id=group_id,
     )
     await msg.answer(answer)
@@ -68,7 +65,6 @@ async def get_tomorrow_lessons(msg: types.Message):
         return
 
     answer = await get_lessons_today_or_tomorrow_for_user(
-        msg.bot.get('db'),
         group_id=group_id,
         tomorrow=True
     )
@@ -80,11 +76,11 @@ async def get_group_id_or_none(msg: types.Message) -> int | None:
     Check exist input group title. If not, send message. If yes, return group id.
     If in database exist more than one group with same title, send message with list of groups.
     """
-    data = msg.text.split() # /today <group_title>
+    data = msg.text.split()  # /today <group_title>
     if len(data) == 1:
-        return await get_group_id_by_user_id(msg.bot.get('db'), user_id=msg.from_user.id)
+        return await get_group_id_by_user_id(user_id=msg.from_user.id)
     else:
-        groups = await get_groups_instances_by_title(msg.bot.get('db'), data[1])
+        groups = await get_groups_instances_by_title(data[1])
         match len(groups):
             case 0:
                 await msg.answer(f'Група з назвою <b>{data[1]}</b> не знайдена в базі даних.')
@@ -106,23 +102,19 @@ async def group_schedule_callback(callback: types.CallbackQuery):
     match data_inline_keyboard[2]:
         case 'today':
             answer = await get_lessons_today_or_tomorrow_for_user(
-                callback.bot.get('db'),
                 group_id=group_id,
             )
         case 'tomorrow':
             answer = await get_lessons_today_or_tomorrow_for_user(
-                callback.bot.get('db'),
                 group_id=group_id,
                 tomorrow=True
             )
         case 'current_week':
             answer = await get_lessons_current_or_next_week_for_user(
-                callback.bot.get('db'),
                 group_id=group_id
             )
         case 'next_week':
             answer = await get_lessons_current_or_next_week_for_user(
-                callback.bot.get('db'),
                 group_id=group_id,
                 next_week=True
             )
