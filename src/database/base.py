@@ -1,11 +1,11 @@
 from typing import TypeAlias
-from sqlalchemy.ext.declarative import declarative_base
+
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+from sqlalchemy.orm import DeclarativeBase
 
 from config_loader import load_config_db, DatabaseConfig
 
 sqlalchemy_url: TypeAlias = str
-
-Base = declarative_base()
 
 
 def get_sqlalchemy_url() -> sqlalchemy_url:
@@ -15,3 +15,26 @@ def get_sqlalchemy_url() -> sqlalchemy_url:
         f'postgresql+asyncpg://{config_db.user}:{config_db.password}@'
         f'{config_db.host}/{config_db.db_name}'
     )
+
+
+engine = create_async_engine(
+    get_sqlalchemy_url(),
+    future=True
+)
+
+sessionmaker_async = async_sessionmaker(
+    engine, expire_on_commit=False, class_=AsyncSession
+)
+
+
+class Base(DeclarativeBase):
+    pass
+
+
+async def get_session_db() -> AsyncSession:
+    """Get AsyncSession object for executing SQL"""
+    async with sessionmaker_async() as session:
+        try:
+            yield session
+        finally:
+            session.close()

@@ -73,8 +73,9 @@ async def parse_schedule_tables(url: str) -> list[LessonTuple]:
     return lessons
 
 
-def _sort_lesson(disciplines: list[str], teachers: list[str], locations: list[str]
-                 ) -> list[dict[str, str]]:
+def _sort_lesson(
+        disciplines: list[str], teachers: list[str], locations: list[str]
+) -> list[dict[str, str]]:
     """Sorting lessons in list of dicts"""
     sort_lessons = []
     sliced_teachers_names = _slice_teachers_names(teachers)

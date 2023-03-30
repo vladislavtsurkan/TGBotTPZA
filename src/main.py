@@ -5,13 +5,10 @@ from loguru import logger
 from aiogram import Bot, Dispatcher
 from aiogram.contrib.fsm_storage.mongo import MongoStorage
 
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker
-
 from config_loader import load_config_bot, BotConfig, load_config_mongo_db, MongoDBConfig
 from handlers import client, other, admin
 from handlers.fsm import register_all_fsm_handlers
-from database.base import Base, get_sqlalchemy_url
+from database.base import sessionmaker_async
 
 logs_folder = Path("logs")
 if not logs_folder.exists():
@@ -31,21 +28,9 @@ async def on_startup(dp: Dispatcher):
 
 
 async def main():
-    engine = create_async_engine(
-        get_sqlalchemy_url(),
-        future=True
-    )
-
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-
-    async_sessionmaker = sessionmaker(
-        engine, expire_on_commit=False, class_=AsyncSession
-    )
-
     config_bot: BotConfig = load_config_bot()
     bot = Bot(token=config_bot.token, parse_mode='HTML')
-    bot['db'] = async_sessionmaker
+    bot['db'] = sessionmaker_async
     bot['ids_skip_check_registered'] = set()
 
     config_mongo: MongoDBConfig = load_config_mongo_db()

@@ -18,11 +18,12 @@ async def start_registration(msg: types.Message):
     await msg.answer('Введіть назву Вашої групи.')
     await FSMRegistration.group.set()
 
+
 async def input_name_group(msg: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['group'] = msg.text
 
-        groups: list[Group] = await get_groups_instances_by_title(msg.bot.get('db'), data['group'])
+        groups: list[Group] = await get_groups_instances_by_title(data['group'])
         match len(groups):
             case 0:
                 await msg.answer(
@@ -31,7 +32,7 @@ async def input_name_group(msg: types.Message, state: FSMContext):
                 )
             case 1:
                 group: Group = groups[0]
-                if await register_user(msg.bot.get('db'), group.id, user_id=msg.from_user.id):
+                if await register_user(group.id, user_id=msg.from_user.id):
                     await msg.answer('Налаштування групи були успішно збережені.')
                     await state.finish()
                 else:
@@ -47,7 +48,7 @@ async def group_select_callback(callback: types.CallbackQuery, state: FSMContext
     data_inline_keyboard = callback.data.split()
     group_id = int(data_inline_keyboard[2])
 
-    if await register_user(callback.bot.get('db'), group_id, user_id=callback.from_user.id):
+    if await register_user(group_id, user_id=callback.from_user.id):
         await callback.message.edit_text(
             'Чудово. Тепер Ви можете користуватись повним функціоналом.', reply_markup=None
         )
