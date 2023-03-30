@@ -32,6 +32,7 @@ class Base(DeclarativeBase):
 
 
 async def get_session_db() -> AsyncSession:
+    """Get AsyncSession object for executing SQL"""
     async with sessionmaker_async() as session:
         try:
             yield session

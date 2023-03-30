@@ -135,11 +135,13 @@ async def change_title_for_faculty(
 
 
 async def delete_faculty(
-        faculty_id: int, *, session: AsyncSession | None = None
+        faculty_id: int, *, db_session: AsyncSession | None = None
 ) -> None:
     """Delete faculty instance in database by faculty_id with cascade"""
-    if session is None:
+    if db_session is None:
         session = await get_session_db()
+    else:
+        session = db_session
 
     sql_select_departments = select(Department).where(
         Department.faculty_id == faculty_id
@@ -148,11 +150,13 @@ async def delete_faculty(
     departments = result.scalars().all()
 
     for department in departments:
-        await delete_department(department_id=department.id, session=session)
+        await delete_department(department_id=department.id, db_session=session)
 
     sql = delete(Faculty).where(Faculty.id == faculty_id)
     await session.execute(sql)
-    await session.commit()
+
+    if db_session is None:
+        await session.commit()
 
 
 async def create_department(
@@ -212,21 +216,25 @@ async def change_title_for_department(
     await session.commit()
 
 
-async def delete_department(*, department_id: int, session: AsyncSession | None = None) -> None:
+async def delete_department(*, department_id: int, db_session: AsyncSession | None = None) -> None:
     """Delete department instance in database by department_id with cascade"""
-    if session is None:
+    if db_session is None:
         session = await get_session_db()
+    else:
+        session = db_session
 
     sql_select_group = select(Group).where(Group.department_id == department_id)
     result = await session.execute(sql_select_group)
     groups = result.scalars().all()
 
     for group in groups:
-        await delete_group(group_id=group.id, department_id=department_id, session=session)
+        await delete_group(group_id=group.id, department_id=department_id, db_session=session)
 
     sql_delete_department = delete(Department).where(Department.id == department_id)
     await session.execute(sql_delete_department)
-    await session.commit()
+
+    if db_session is None:
+        await session.commit()
 
 
 async def create_group(
@@ -287,11 +295,13 @@ async def get_group_instance_by_id(
 
 
 async def delete_group(
-        *, group_id: int, department_id: int, session: AsyncSession | None = None
+        *, group_id: int, department_id: int, db_session: AsyncSession | None = None
 ) -> None:
     """Delete group instance in database by group_id"""
-    if session is None:
+    if db_session is None:
         session = await get_session_db()
+    else:
+        session = db_session
 
     sql_group_table = delete(Group).where(
         Group.department_id == department_id, Group.id == group_id
@@ -302,7 +312,9 @@ async def delete_group(
     await session.execute(sql_group_lesson_table, {'group_id': group_id})
     await session.execute(sql_group_table)
     await session.execute(sql_user_group)
-    await session.commit()
+
+    if db_session is None:
+        await session.commit()
 
 
 async def change_title_for_group(
