@@ -6,7 +6,6 @@ from sqlalchemy import select
 from sqlalchemy.sql.selectable import Select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database.base import get_session_db
 from database.models import Base, User, Group, Department, Faculty
 
 
@@ -28,11 +27,9 @@ async def get_or_create(
 
 
 async def is_model_exist_by_name(
-        title: str, *, class_model: Type[Group | Department | Faculty]
+        title: str, *, class_model: Type[Group | Department | Faculty], session: AsyncSession
 ) -> (bool, int):
     """Check if model exist by title (work with Group, Department, Faculty)"""
-    session = await get_session_db()
-
     sql = select(class_model).where(class_model.title == title)
     result = await session.execute(sql)
     instance_model = result.scalars().first()
@@ -42,10 +39,8 @@ async def is_model_exist_by_name(
     )
 
 
-async def is_user_admin(msg: types.Message) -> bool:
+async def is_user_admin(msg: types.Message, *, session: AsyncSession) -> bool:
     """Check if user is admin"""
-    session = await get_session_db()
-
     sql = select(User).where(User.id == msg.from_user.id)
     result = await session.execute(sql)
     user: User = result.scalars().first()
@@ -56,25 +51,13 @@ async def is_user_admin(msg: types.Message) -> bool:
         return False
 
 
-async def is_registered_user(msg: types.Message) -> bool:
+async def is_registered_user(msg: types.Message, *, session: AsyncSession) -> bool:
     """Check if user is registered in database"""
-    ids_skip: set[int] = msg.bot.get('ids_skip_check_registered')
-
-    if (id_user := msg.from_user.id) in ids_skip:
-        return True
-
-    session = await get_session_db()
-
-    sql = select(User).where(User.id == id_user)
+    sql = select(User).where(User.id == msg.from_user.id)
     result = await session.execute(sql)
     user = result.scalars().first()
 
-    if user is not None:
-        ids_skip.add(id_user)
-        msg.bot['ids_skip_check_registered'] = ids_skip
-        return True
-    else:
-        return False
+    return user is not None
 
 
 def get_current_week_number() -> int:

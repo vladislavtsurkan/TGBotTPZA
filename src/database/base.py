@@ -29,12 +29,3 @@ sessionmaker_async = async_sessionmaker(
 
 class Base(DeclarativeBase):
     pass
-
-
-async def get_session_db() -> AsyncSession:
-    """Get AsyncSession object for executing SQL"""
-    async with sessionmaker_async() as session:
-        try:
-            yield session
-        finally:
-            session.close()

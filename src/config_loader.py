@@ -13,10 +13,11 @@ class DatabaseConfig(NamedTuple):
     password: str
 
 
-class MongoDBConfig(NamedTuple):
+class RedisConfig(NamedTuple):
     host: str
     port: int
-    db_name: str
+    password: str
+    db: int = 0
 
 
 def load_config_db() -> DatabaseConfig:
@@ -28,11 +29,11 @@ def load_config_db() -> DatabaseConfig:
     )
 
 
-def load_config_mongo_db() -> MongoDBConfig:
-    return MongoDBConfig(
-        host=getenv("MONGO_DB_HOST"),
-        port=int(getenv("MONGO_DB_PORT")),
-        db_name=getenv("MONGO_DB_NAME")
+def load_config_redis() -> RedisConfig:
+    return RedisConfig(
+        host=getenv("REDIS_HOST"),
+        port=int(getenv("REDIS_PORT")),
+        password=getenv("REDIS_PASS"),
     )
 
 

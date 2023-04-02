@@ -1,5 +1,5 @@
 cryptography==40.0.1
-aiogram==2.25.1
+aiogram==3.0.0b7
 aiohttp==3.8.4
 pymongo==4.3.3
 motor==3.1.1
@@ -11,3 +11,4 @@ alembic==1.10.2
 loguru==0.6.0
 pytest==7.2.2
 pytest-asyncio==0.21.0
+redis==4.5.4

@@ -3,7 +3,8 @@ version: '3'
 services:
   bot_schedule:
     build: .
-    command: python main.py
+    command: >
+      sh -c "alembic upgrade head && python3 main.py"
     restart: unless-stopped
     environment:
       MONGO_DB_HOST: mongo
@@ -13,13 +14,13 @@ services:
       DB_USER: aiogram
       DB_PASS: aiogram
       DB_NAME: schedule_bot_db
-      BOT_TOKEN: 5740240406:AAHqlN-bos-fmmuKAjrkwHp-NFujf_0sk5E
-      LOGURU_LEVEL: WARNING
+    env_file:
+      - .env
     links:
       - postgresql
-      - mongo
+      - redis
     depends_on:
-      - mongo
+      - redis
       - postgresql
 
   postgresql:
@@ -34,8 +35,8 @@ services:
     volumes:
       - ./data/db:/var/lib/postgresql/data
 
-  mongo:
-    image: mongo:6.0.2
+  redis:
+    image: redis:7.0.9
     restart: unless-stopped
     ports:
-      - "27017:27017"
+      - "6379:6379"

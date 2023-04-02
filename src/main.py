@@ -1,14 +1,16 @@
 import asyncio
 from pathlib import Path
 from loguru import logger
+from redis.asyncio.client import Redis
 
 from aiogram import Bot, Dispatcher
-from aiogram.contrib.fsm_storage.mongo import MongoStorage
+from aiogram.fsm.storage.redis import RedisStorage
 
-from config_loader import load_config_bot, BotConfig, load_config_mongo_db, MongoDBConfig
+from config_loader import load_config_bot, BotConfig, load_config_redis, RedisConfig
 from handlers import client, other, admin
-from handlers.fsm import register_all_fsm_handlers
+from handlers.fsm import router as router_fsm
 from database.base import sessionmaker_async
+from middlewares import DbSessionMiddleware
 
 logs_folder = Path("logs")
 if not logs_folder.exists():
@@ -17,36 +19,35 @@ if not logs_folder.exists():
 logger.add('logs/bot.log', rotation='10 MB', compression='zip', enqueue=True, level="WARNING")
 
 
-async def on_startup(dp: Dispatcher):
-    logger.debug("The bot launch process has been started")
-    await other.set_default_commands(dp)
-    register_all_fsm_handlers(dp)
-    admin.register_handlers_admin(dp)
-    client.register_handlers_client(dp)
-    other.register_handlers_other(dp)
-    logger.debug('The bot launch process has been completed')
-
-
 async def main():
     config_bot: BotConfig = load_config_bot()
     bot = Bot(token=config_bot.token, parse_mode='HTML')
-    bot['db'] = sessionmaker_async
-    bot['ids_skip_check_registered'] = set()
 
-    config_mongo: MongoDBConfig = load_config_mongo_db()
-    storage = MongoStorage(
-        host=config_mongo.host, port=config_mongo.port, db_name=config_mongo.db_name
+    config_redis: RedisConfig = load_config_redis()
+    storage = RedisStorage(
+        Redis(
+            host=config_redis.host,
+            password=config_redis.password,
+            db=config_redis.db,
+            port=config_redis.port,
+        )
     )
-    dp = Dispatcher(bot, storage=storage)
+    dp = Dispatcher(storage=storage)
+    dp.update.middleware(DbSessionMiddleware(session_pool=sessionmaker_async))
 
-    await on_startup(dp)
+    # including routers
+    dp.include_router(router_fsm)
+    dp.include_router(admin.router)
+    dp.include_router(client.router)
+    dp.include_router(other.router)
+
+    await other.set_default_commands(bot)
 
     try:
         await bot.delete_webhook(drop_pending_updates=True)
-        await dp.start_polling()
+        await dp.start_polling(bot)
     finally:
         await dp.storage.close()
-        await dp.storage.wait_closed()
         await bot.session.close()
         await logger.complete()
 

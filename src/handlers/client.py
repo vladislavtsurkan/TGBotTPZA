@@ -1,8 +1,11 @@
-from aiogram.dispatcher.filters import Text
+from aiogram.filters import Command
+from aiogram.fsm.context import FSMContext
 from loguru import logger
-from aiogram import types, Dispatcher
+from aiogram import types, Router, F
 
-from handlers.fsm.decorators import check_user_is_registered
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from handlers.fsm.registration import start_registration
 from services.client import (
     get_lessons_today_or_tomorrow_for_user,
     get_lessons_current_or_next_week_for_user,
@@ -10,77 +13,113 @@ from services.client import (
 )
 from services.admin import get_groups_instances_by_title
 from keyboards.kb_with_groups_schedule import get_keyboard_with_groups
+from services.utils import is_registered_user
+
+router = Router(name="client-commands")
 
 
-@check_user_is_registered(allow_function=True)
-async def send_welcome(msg: types.Message):
+@router.message(Command(commands=["help", "start"]))
+async def send_welcome(
+        msg: types.Message, session: AsyncSession, state: FSMContext
+) -> None:
     await msg.answer(
         f'Я бот-помічник для пошуку розкладу в КПІ. Приємно познайомитись, '
         f'{msg.from_user.first_name}.\n'
         f'Для початку роботи зі мною Ви повинні вказати групу, розклад якої вас цікавить.'
     )
 
+    if not await is_registered_user(msg, session=session):
+        await start_registration(msg, state)
 
-@check_user_is_registered
-async def get_current_week_lessons(msg: types.Message):
-    group_id = await get_group_id_or_none(msg)
+
+@router.message(Command("current_week"))
+async def get_current_week_lessons(
+        msg: types.Message, session: AsyncSession, state: FSMContext
+) -> None:
+    if not await is_registered_user(msg, session=session):
+        await start_registration(msg, state)
+        return
+
+    group_id = await get_group_id_or_none(msg, session=session)
     if group_id is None:
         return
 
     answer = await get_lessons_current_or_next_week_for_user(
         group_id=group_id,
+        session=session
     )
     await msg.answer(answer)
 
 
-@check_user_is_registered
-async def get_next_week_lessons(msg: types.Message):
-    group_id = await get_group_id_or_none(msg)
+@router.message(Command("next_week"))
+async def get_next_week_lessons(
+        msg: types.Message, session: AsyncSession, state: FSMContext
+) -> None:
+    if not await is_registered_user(msg, session=session):
+        await start_registration(msg, state)
+        return
+
+    group_id = await get_group_id_or_none(msg, session=session)
     if group_id is None:
         return
 
     answer = await get_lessons_current_or_next_week_for_user(
         group_id=group_id,
-        next_week=True
+        next_week=True,
+        session=session
     )
     await msg.answer(answer)
 
 
-@check_user_is_registered
-async def get_today_lessons(msg: types.Message):
-    group_id = await get_group_id_or_none(msg)
+@router.message(Command("today"))
+async def get_today_lessons(
+        msg: types.Message, session: AsyncSession, state: FSMContext
+) -> None:
+    if not await is_registered_user(msg, session=session):
+        await start_registration(msg, state)
+        return
+
+    group_id = await get_group_id_or_none(msg, session=session)
     if group_id is None:
         return
 
     answer = await get_lessons_today_or_tomorrow_for_user(
         group_id=group_id,
+        session=session
     )
     await msg.answer(answer)
 
 
-@check_user_is_registered
-async def get_tomorrow_lessons(msg: types.Message):
-    group_id = await get_group_id_or_none(msg)
+@router.message(Command("tomorrow"))
+async def get_tomorrow_lessons(
+        msg: types.Message, session: AsyncSession, state: FSMContext
+) -> None:
+    if not await is_registered_user(msg, session=session):
+        await start_registration(msg, state)
+        return
+
+    group_id = await get_group_id_or_none(msg, session=session)
     if group_id is None:
         return
 
     answer = await get_lessons_today_or_tomorrow_for_user(
         group_id=group_id,
-        tomorrow=True
+        tomorrow=True,
+        session=session
     )
     await msg.answer(answer)
 
 
-async def get_group_id_or_none(msg: types.Message) -> int | None:
+async def get_group_id_or_none(msg: types.Message, session: AsyncSession) -> int | None:
     """
     Check exist input group title. If not, send message. If yes, return group id.
     If in database exist more than one group with same title, send message with list of groups.
     """
     data = msg.text.split()  # /today <group_title>
     if len(data) == 1:
-        return await get_group_id_by_user_id(user_id=msg.from_user.id)
+        return await get_group_id_by_user_id(user_id=msg.from_user.id, session=session)
     else:
-        groups = await get_groups_instances_by_title(data[1])
+        groups = await get_groups_instances_by_title(data[1], session=session)
         match len(groups):
             case 0:
                 await msg.answer(f'Група з назвою <b>{data[1]}</b> не знайдена в базі даних.')
@@ -95,7 +134,8 @@ async def get_group_id_or_none(msg: types.Message) -> int | None:
                 return
 
 
-async def group_schedule_callback(callback: types.CallbackQuery):
+@router.callback_query(F.data.startswith('group schedule'))
+async def group_schedule_callback(callback: types.CallbackQuery, session: AsyncSession) -> None:
     data_inline_keyboard = callback.data.split()
     group_id = int(data_inline_keyboard[3])
 
@@ -103,20 +143,24 @@ async def group_schedule_callback(callback: types.CallbackQuery):
         case 'today':
             answer = await get_lessons_today_or_tomorrow_for_user(
                 group_id=group_id,
+                session=session
             )
         case 'tomorrow':
             answer = await get_lessons_today_or_tomorrow_for_user(
                 group_id=group_id,
-                tomorrow=True
+                tomorrow=True,
+                session=session
             )
         case 'current_week':
             answer = await get_lessons_current_or_next_week_for_user(
-                group_id=group_id
+                group_id=group_id,
+                session=session
             )
         case 'next_week':
             answer = await get_lessons_current_or_next_week_for_user(
                 group_id=group_id,
-                next_week=True
+                next_week=True,
+                session=session
             )
         case _:
             logger.error(f'Unknown command: {data_inline_keyboard[2]}')
@@ -124,16 +168,3 @@ async def group_schedule_callback(callback: types.CallbackQuery):
 
     await callback.message.edit_text(answer, reply_markup=None)
     await callback.answer()
-
-
-def register_handlers_client(dp: Dispatcher):
-    logger.debug('Start registration handlers for client (User)')
-    dp.register_message_handler(send_welcome, commands=['start', 'help'])
-    dp.register_message_handler(get_today_lessons, commands=['today'])
-    dp.register_message_handler(get_tomorrow_lessons, commands=['tomorrow'])
-    dp.register_message_handler(get_current_week_lessons, commands=['current_week'])
-    dp.register_message_handler(get_next_week_lessons, commands=['next_week'])
-    dp.register_callback_query_handler(
-        group_schedule_callback, Text(startswith='group schedule')
-    )
-    logger.debug('Stop registration handlers for client (User)')

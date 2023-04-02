@@ -1,11 +1,15 @@
-from aiogram import types, Dispatcher
-from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters.state import State, StatesGroup
+from aiogram import types, Router
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import State, StatesGroup
+from aiogram.filters import Command
+
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from services.admin import create_faculty
-from services.utils import is_model_exist_by_name
-from handlers.fsm.decorators import check_user_is_admin, check_user_is_registered
+from services.utils import is_model_exist_by_name, is_registered_user, is_user_admin
 from database.models import Faculty
+
+router = Router(name="fsm-add-faculty-router")
 
 
 class FSMAddFaculty(StatesGroup):
@@ -13,40 +17,44 @@ class FSMAddFaculty(StatesGroup):
     title_short = State()
 
 
-@check_user_is_registered
-@check_user_is_admin
-async def start_add_new_faculty(msg: types.Message):
-    await FSMAddFaculty.title.set()
-    await msg.answer('Введіть назву факультету.')
+@router.message(Command("add_faculty"))
+async def start_add_new_faculty(
+        msg: types.Message, state: FSMContext, session: AsyncSession
+) -> None:
+    if (
+            await is_registered_user(msg, session=session) and
+            await is_user_admin(msg, session=session)
+    ):
+        await state.set_state(FSMAddFaculty.title)
+        await msg.answer('Введіть назву факультету.')
 
 
-async def input_faculty_title(msg: types.Message, state: FSMContext):
-    async with state.proxy() as data:
-        data['title'] = msg.text
+@router.message(FSMAddFaculty.title)
+async def input_faculty_title(
+        msg: types.Message, state: FSMContext, session: AsyncSession
+) -> None:
+    await state.update_data(title=msg.text)
 
-        is_exist, _ = await is_model_exist_by_name(msg.text, class_model=Faculty)
-        if is_exist:
-            await msg.answer('Факультет з такою назвою вже існує.')
-            await state.finish()
-        else:
-            await msg.answer('Тепер введіть абревіатуру факультету (наприклад, ІХФ).')
-            await FSMAddFaculty.next()
-
-
-async def input_faculty_title_short(msg: types.Message, state: FSMContext):
-    async with state.proxy() as data:
-        data['title_short'] = msg.text
-
-        if len(msg.text) >= 2:
-            await create_faculty(data['title'], data['title_short'].upper())
-            await msg.answer(
-                f"Новий факультет було додано в базу даних: {data['title']} "
-                f"({data['title_short']})."
-            )
-            await state.finish()
+    is_exist, _ = await is_model_exist_by_name(msg.text, class_model=Faculty, session=session)
+    if is_exist:
+        await msg.answer('Факультет з такою назвою вже існує.')
+        await state.clear()
+    else:
+        await msg.answer('Тепер введіть абревіатуру факультету (наприклад, ІХФ).')
+        await state.set_state(FSMAddFaculty.title_short)
 
 
-def register_handlers_fsm_add_faculty(dp: Dispatcher):
-    dp.register_message_handler(start_add_new_faculty, commands=['add_faculty'], state=None)
-    dp.register_message_handler(input_faculty_title, state=FSMAddFaculty.title)
-    dp.register_message_handler(input_faculty_title_short, state=FSMAddFaculty.title_short)
+@router.message(FSMAddFaculty.title_short)
+async def input_faculty_title_short(
+        msg: types.Message, state: FSMContext, session: AsyncSession
+) -> None:
+    await state.update_data(title_short=msg.text)
+
+    if len(msg.text) >= 2:
+        data = await state.get_data()
+        await create_faculty(data['title'], data['title_short'].upper(), session=session)
+        await msg.answer(
+            f"Новий факультет було додано в базу даних: {data['title']} "
+            f"({data['title_short']})."
+        )
+        await state.clear()

@@ -1,32 +1,37 @@
+from aiogram.fsm.context import FSMContext
 from loguru import logger
 
-from aiogram import types, Dispatcher
-from aiogram.utils.exceptions import BotBlocked
+from aiogram import types, Bot, Router
+from aiogram.filters import Text
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from handlers.fsm.decorators import check_user_is_registered
+from handlers.fsm.registration import start_registration
+from services.utils import is_registered_user
 
-
-async def error_bot_blocked(update: types.Update, exception: BotBlocked):
-    """Error handling (BotBlocked)"""
-    print(f"Мене заблокував користувач!\nПовідомлення: {update}\nПомилка: {exception}")
-    return True
+router = Router(name="other-commands")
 
 
-async def set_default_commands(dp: Dispatcher):
+async def set_default_commands(bot: Bot):
     logger.debug("Start set default commands for bot")
-    await dp.bot.set_my_commands([
-        types.BotCommand("help", "Інформація"),
-        types.BotCommand("today", "Пари на сьогодні"),
-        types.BotCommand("tomorrow", "Пари завтра"),
-        types.BotCommand("current_week", "Пари поточного тижня"),
-        types.BotCommand("next_week", "Пари наступного тижня"),
-        types.BotCommand("cancel", "Відміна дії"),
+    await bot.set_my_commands([
+        types.BotCommand(command="help", description="Інформація"),
+        types.BotCommand(command="today", description="Пари на сьогодні"),
+        types.BotCommand(command="tomorrow", description="Пари завтра"),
+        types.BotCommand(command="current_week", description="Пари поточного тижня"),
+        types.BotCommand(command="next_week", description="Пари наступного тижня"),
+        types.BotCommand(command="cancel", description="Відміна дії"),
     ])
     logger.debug("Success set default commands for bot")
 
 
-@check_user_is_registered
-async def get_text_messages(msg: types.Message):
+@router.message(Text)
+async def get_text_messages(
+        msg: types.Message, session: AsyncSession, state: FSMContext
+) -> None:
+    if not await is_registered_user(msg, session=session):
+        await start_registration(msg, state)
+        return
+
     match msg.text.lower():
         case 'сайт' | 'site':
             await msg.answer('<a href="http://epi.kpi.ua">Розклад КПІ</a>')
@@ -36,10 +41,3 @@ async def get_text_messages(msg: types.Message):
             await msg.answer('<b>Мій аккаунт: </b><a href="t.me/vladyslavtsurkan">Telegram</a>')
         case _:
             await msg.answer('Я вас не розумію.')
-
-
-def register_handlers_other(dp: Dispatcher):
-    logger.debug('Start registration handlers for "other"')
-    dp.register_errors_handler(error_bot_blocked, exception=BotBlocked)
-    dp.register_message_handler(get_text_messages, content_types=['text'])
-    logger.debug('Stop registration handlers for "other"')

@@ -4,7 +4,6 @@ from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database.base import get_session_db
 from database.models import User, Group, Lesson, Discipline, Teacher
 from services.utils import (
     get_time_of_lesson_by_number,
@@ -14,11 +13,9 @@ from services.utils import (
 
 
 async def get_lessons_current_or_next_week_for_user(
-        *, group_id: int, next_week: bool = False
+        *, group_id: int, next_week: bool = False, session: AsyncSession
 ) -> str:
     """Get lessons for user current or next week"""
-    session = await get_session_db()
-
     group_title, lessons = await _get_group_title_and_lessons_by_group_id(session, group_id)
     _, week_of_schedule_number = get_current_day_and_week_of_schedule_number()
 
@@ -61,11 +58,9 @@ async def get_lessons_current_or_next_week_for_user(
 
 
 async def get_lessons_today_or_tomorrow_for_user(
-        *, group_id: int, tomorrow: bool = False
+        *, group_id: int, tomorrow: bool = False, session: AsyncSession
 ) -> str:
     """Get lessons for user today or tomorrow"""
-    session = await get_session_db()
-
     group_title, lessons = await _get_group_title_and_lessons_by_group_id(session, group_id)
 
     day_of_week_number, week_of_schedule_number = get_current_day_and_week_of_schedule_number(
@@ -113,10 +108,8 @@ async def get_lessons_today_or_tomorrow_for_user(
     return answer
 
 
-async def get_group_id_by_user_id(*, user_id: int) -> int:
+async def get_group_id_by_user_id(*, user_id: int, session: AsyncSession) -> int:
     """Get group id by user id"""
-    session = await get_session_db()
-
     sql_user = select(User).where(User.id == user_id)
     result = await session.execute(sql_user)
     user = result.scalars().first()
